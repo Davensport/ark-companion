@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARK Tribe Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tek-blue: #00f2ff;
+            --tek-bg: #121212;
+            --tek-panel: #1e1e1e;
+        }
+        
+        body {
+            background-color: var(--tek-bg);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 20px;
+            /* Hex grid background effect */
+            background-image: radial-gradient(#1a1a1a 15%, transparent 16%), radial-gradient(#1a1a1a 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        h1 { text-align: center; color: var(--tek-blue); text-shadow: 0 0 10px var(--tek-blue); }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        /* TEK CARD STYLE */
+        .tek-card {
+            background: var(--tek-panel);
+            border: 1px solid var(--tek-blue);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        /* INPUTS */
+        input, select, button {
+            background: #000;
+            border: 1px solid var(--tek-blue);
+            color: var(--tek-blue);
+            padding: 10px;
+            font-family: 'Orbitron', sans-serif;
+            margin: 5px;
+            width: calc(50% - 22px);
+        }
+
+        button {
+            width: 100%;
+            background: rgba(0, 242, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        button:hover { background: var(--tek-blue); color: black; }
+
+        /* DINO LIST */
+        .dino-stat { font-size: 0.9em; color: #ccc; margin: 5px 0; }
+        .badge { 
+            background: var(--tek-blue); color: black; 
+            padding: 2px 8px; border-radius: 4px; font-size: 0.8em; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>/// TRIBE LOG_</h1>
+
+    <div class="tek-card">
+        <h3>+ ADD NEW SPECIMEN</h3>
+        <form id="addDinoForm">
+            <input type="text" id="species" placeholder="Species (e.g. Rex)" required>
+            <input type="text" id="name" placeholder="Dino Name" required>
+            <input type="number" id="level" placeholder="Level" required>
+            <select id="sex">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <input type="number" id="hp" placeholder="Health (HP)" required>
+            <input type="number" id="melee" placeholder="Melee (%)" required>
+            <button type="submit">UPLOAD DATA</button>
+        </form>
+    </div>
+
+    <div id="dino-feed">
+        </div>
+</div>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // --- PASTE YOUR FIREBASE CONFIG HERE ---
+  // It should look like: const firebaseConfig = { apiKey: "...", ... };
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyCrQjV6u3GhWzVo8QQge9N9mrSY5uabdII",
+    authDomain: "ark-tribe-companion.firebaseapp.com",
+    projectId: "ark-tribe-companion",
+    storageBucket: "ark-tribe-companion.firebasestorage.app",
+    messagingSenderId: "653276449134",
+    appId: "1:653276449134:web:8bc4a92cd15953db35997f"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 1. LISTENER: This runs AUTOMATICALLY whenever the database changes
+  const q = query(collection(db, "dinos"), orderBy("timestamp", "desc"));
+  
+  onSnapshot(q, (snapshot) => {
+      const feed = document.getElementById("dino-feed");
+      feed.innerHTML = ""; // Clear list to prevent duplicates
+      
+      snapshot.forEach((doc) => {
+          const dino = doc.data();
+          
+          // Create HTML for each dino
+          const card = `
+              <div class="tek-card">
+                  <div style="display:flex; justify-content:space-between;">
+                      <strong style="color:var(--tek-blue); font-size:1.2em;">${dino.species}</strong>
+                      <span class="badge">Lvl ${dino.level}</span>
+                  </div>
+                  <div style="margin-top:10px;">
+                      <div>Name: ${dino.name} (${dino.sex})</div>
+                      <div class="dino-stat">♥ HP: ${dino.hp}  |  ⚔ Melee: ${dino.melee}%</div>
+                  </div>
+              </div>
+          `;
+          feed.innerHTML += card;
+      });
+  });
+
+  // 2. SENDER: This sends data when you click "Upload"
+  document.getElementById("addDinoForm").addEventListener("submit", async (e) => {
+      e.preventDefault(); // Stop page refresh
+      
+      const species = document.getElementById("species").value;
+      const name = document.getElementById("name").value;
+      const level = document.getElementById("level").value;
+      const sex = document.getElementById("sex").value;
+      const hp = document.getElementById("hp").value;
+      const melee = document.getElementById("melee").value;
+
+      try {
+          await addDoc(collection(db, "dinos"), {
+              species: species,
+              name: name,
+              level: level,
+              sex: sex,
+              hp: hp,
+              melee: melee,
+              timestamp: Date.now() // Used for sorting
+          });
+          document.getElementById("addDinoForm").reset(); // Clear the form
+      } catch (e) {
+          console.error("Error adding document: ", e);
+          alert("Error uploading to the cloud!");
+      }
+  });
+</script>
+
+</body>
+</html>
