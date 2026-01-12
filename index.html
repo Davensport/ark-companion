@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion</title>
+    <title>ARK Tribe Companion v3</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,6 +12,8 @@
             --tek-bg: #121212;
             --tek-panel: #1e1e1e;
             --danger: #ff4444;
+            --gold: #ffd700;
+            --gray: #666666;
         }
         
         body {
@@ -26,7 +28,7 @@
             background-size: 20px 20px;
         }
 
-        /* SIDEBAR (The Navigation) */
+        /* SIDEBAR */
         .sidebar {
             width: 250px;
             background: var(--tek-panel);
@@ -53,7 +55,7 @@
             box-shadow: 0 0 15px var(--tek-blue);
         }
 
-        /* MAIN CONTENT AREA */
+        /* MAIN CONTENT */
         .main-content {
             flex-grow: 1;
             padding: 20px;
@@ -61,11 +63,10 @@
             position: relative;
         }
 
-        /* VIEWS (Tabs) */
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* FORMS & CARDS */
+        /* FORMS */
         input, select {
             background: #000;
             border: 1px solid var(--tek-blue);
@@ -79,30 +80,41 @@
 
         .tek-card {
             background: rgba(30, 30, 30, 0.9);
-            border-left: 5px solid var(--tek-blue);
-            border-top: 1px solid var(--tek-blue);
-            border-bottom: 1px solid var(--tek-blue);
-            border-right: 1px solid var(--tek-blue);
+            border-left: 5px solid var(--tek-blue); /* Default Blue */
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+            border-right: 1px solid #333;
             padding: 15px;
             margin-bottom: 15px;
             position: relative;
             animation: fadeIn 0.3s ease;
         }
 
+        /* STATUS COLORS */
+        .status-breeder { border-left-color: var(--gold); }
+        .status-boss { border-left-color: var(--danger); }
+        .status-fodder { border-left-color: var(--gray); }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 
-        .delete-btn {
+        .card-actions {
             position: absolute;
             top: 10px;
             right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
             background: transparent;
-            border: 1px solid var(--danger);
-            color: var(--danger);
+            border: 1px solid #555;
+            color: #888;
             font-size: 0.8em;
             cursor: pointer;
             padding: 5px 10px;
         }
-        .delete-btn:hover { background: var(--danger); color: white; }
+        .action-btn:hover { border-color: white; color: white; }
+        .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
 
         .filter-bar {
             margin-bottom: 20px;
@@ -136,14 +148,24 @@
             color: #ccc;
             margin-top: 10px;
         }
+        
+        .badge {
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            background: #333;
+            color: #ccc;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v3</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
-    <button class="nav-btn" onclick="switchTab('add')">➕ ADD DATA</button>
+    <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
 </div>
 
 <div class="main-content">
@@ -157,13 +179,23 @@
 
     <div id="add" class="view-section">
         <div class="tek-card" style="max-width: 500px; margin: 0 auto;">
-            <h3>// UPLOAD NEW SPECIMEN</h3>
+            <h3 id="formTitle">// UPLOAD NEW SPECIMEN</h3>
             <form id="addDinoForm">
-                <label>Species</label>
-                <input type="text" id="species" placeholder="e.g. Rex" required>
+                <input type="hidden" id="docId">
+
+                <label>Classification</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="species" placeholder="Species (e.g. Rex)" required>
+                    <select id="status">
+                        <option value="Standard">Standard</option>
+                        <option value="Main Breeder">Main Breeder (Gold)</option>
+                        <option value="Boss Army">Boss Army (Red)</option>
+                        <option value="Fodder">Backup/Fodder</option>
+                    </select>
+                </div>
                 
-                <label>Name</label>
-                <input type="text" id="name" placeholder="e.g. Boss Breeder M1" required>
+                <label>Identity</label>
+                <input type="text" id="name" placeholder="Name" required>
                 
                 <div style="display:flex; gap:10px;">
                     <input type="number" id="level" placeholder="Lvl" required>
@@ -173,6 +205,7 @@
                     </select>
                 </div>
 
+                <label>Base Stats</label>
                 <div class="stat-grid">
                     <input type="number" id="hp" placeholder="HP" required>
                     <input type="number" id="stam" placeholder="Stam">
@@ -180,7 +213,10 @@
                     <input type="number" id="melee" placeholder="Melee %" required>
                 </div>
                 
-                <button type="submit" class="nav-btn" style="width:100%; margin-top:20px; text-align:center;">SAVE TO CLOUD</button>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="button" class="nav-btn" style="flex:1; border-color:#555; color:#888;" onclick="switchTab('library')">CANCEL</button>
+                    <button type="submit" class="nav-btn" style="flex:2;" id="submitBtn">SAVE DATA</button>
+                </div>
             </form>
         </div>
     </div>
@@ -189,10 +225,10 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } 
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // --- YOUR CONFIGURATION ---
+  // --- 🔴 PASTE YOUR CONFIG KEYS HERE 🔴 ---
   const firebaseConfig = {
       apiKey: "AIzaSyCrQjV6u3GhWzVo8QQge9N9mrSY5uabdII",
       authDomain: "ark-tribe-companion.firebaseapp.com",
@@ -225,7 +261,7 @@
       renderList();
   });
 
-  // 2. RENDER THE LIST (With Filter Logic)
+  // 2. RENDER LIST
   function renderList() {
       const feed = document.getElementById("dino-feed");
       feed.innerHTML = "";
@@ -235,12 +271,24 @@
           : allDinos.filter(d => d.species === currentFilter);
 
       filtered.forEach(dino => {
+          // Determine color class based on status
+          let statusClass = '';
+          if(dino.status === 'Main Breeder') statusClass = 'status-breeder';
+          if(dino.status === 'Boss Army') statusClass = 'status-boss';
+          if(dino.status === 'Fodder') statusClass = 'status-fodder';
+
           const html = `
-              <div class="tek-card">
-                  <button class="delete-btn" data-id="${dino.id}">DELETE</button>
+              <div class="tek-card ${statusClass}">
+                  <div class="card-actions">
+                      <button class="action-btn edit-btn" data-id="${dino.id}">✎ EDIT</button>
+                      <button class="action-btn btn-delete" data-id="${dino.id}">✖</button>
+                  </div>
+
                   <strong style="color:var(--tek-blue); font-size:1.2em;">${dino.species}</strong> 
-                  <span style="color:#666;"> - Lvl ${dino.level} ${dino.sex}</span>
-                  <div style="font-size:1.1em; margin: 5px 0;">${dino.name}</div>
+                  <span class="badge">${dino.status || 'Standard'}</span>
+                  
+                  <div style="font-size:1.1em; margin: 5px 0;">${dino.name} <span style="font-size:0.8em; color:#888;">(Lvl ${dino.level} ${dino.sex})</span></div>
+                  
                   <div class="stat-grid">
                       <span>♥ ${dino.hp}</span>
                       <span>⚡ ${dino.stam || '-'}</span>
@@ -252,12 +300,90 @@
           feed.innerHTML += html;
       });
 
-      document.querySelectorAll('.delete-btn').forEach(btn => {
+      // Attach Listeners
+      document.querySelectorAll('.btn-delete').forEach(btn => {
           btn.addEventListener('click', (e) => handleDelete(e.target.dataset.id));
+      });
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => handleEdit(e.target.dataset.id));
       });
   }
 
-  // 3. RENDER FILTER BUTTONS
+  // 3. HANDLE EDIT CLICK
+  function handleEdit(id) {
+      const dino = allDinos.find(d => d.id === id);
+      if(!dino) return;
+
+      // Populate Form
+      document.getElementById('docId').value = dino.id;
+      document.getElementById('species').value = dino.species;
+      document.getElementById('status').value = dino.status || 'Standard';
+      document.getElementById('name').value = dino.name;
+      document.getElementById('level').value = dino.level;
+      document.getElementById('sex').value = dino.sex;
+      document.getElementById('hp').value = dino.hp;
+      document.getElementById('stam').value = dino.stam;
+      document.getElementById('weight').value = dino.weight;
+      document.getElementById('melee').value = dino.melee;
+
+      // Change UI to Edit Mode
+      document.getElementById('formTitle').innerText = "// EDITING: " + dino.name.toUpperCase();
+      document.getElementById('submitBtn').innerText = "UPDATE ENTRY";
+      
+      switchTab('add');
+  }
+
+  // 4. SAVE (ADD OR UPDATE)
+  document.getElementById("addDinoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const docId = document.getElementById('docId').value;
+
+      const payload = {
+          species: form.species.value,
+          status: form.status.value,
+          name: form.name.value,
+          level: form.level.value,
+          sex: form.sex.value,
+          hp: form.hp.value,
+          stam: form.stam.value,
+          weight: form.weight.value,
+          melee: form.melee.value,
+          timestamp: Date.now()
+      };
+      
+      try {
+          if(docId) {
+              // UPDATE EXISTING
+              await updateDoc(doc(db, "dinos", docId), payload);
+              alert("Specimen Updated.");
+          } else {
+              // ADD NEW
+              await addDoc(collection(db, "dinos"), payload);
+              alert("Specimen Uploaded.");
+          }
+          resetForm();
+          switchTab('library');
+      } catch(err) {
+          console.error(err);
+          alert("Error saving data.");
+      }
+  });
+
+  // 5. HELPERS
+  window.resetForm = function() {
+      document.getElementById("addDinoForm").reset();
+      document.getElementById('docId').value = "";
+      document.getElementById('formTitle').innerText = "// UPLOAD NEW SPECIMEN";
+      document.getElementById('submitBtn').innerText = "SAVE TO CLOUD";
+  }
+
+  async function handleDelete(id) {
+      if(confirm("Destroy this data pattern? (Cannot be undone)")) {
+          await deleteDoc(doc(db, "dinos", id));
+      }
+  }
+
   function renderFilters(speciesList) {
       const bar = document.getElementById("speciesFilterBar");
       bar.innerHTML = `<span class="filter-chip ${currentFilter === 'All' ? 'active' : ''}" id="filter-all">All Species</span>`;
@@ -273,7 +399,6 @@
           };
           bar.appendChild(chip);
       });
-
       document.getElementById('filter-all').onclick = () => {
           currentFilter = 'All';
           renderFilters(speciesList);
@@ -281,40 +406,9 @@
       };
   }
 
-  // 4. ADD DATA
-  document.getElementById("addDinoForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      
-      await addDoc(collection(db, "dinos"), {
-          species: form.species.value,
-          name: form.name.value,
-          level: form.level.value,
-          sex: form.sex.value,
-          hp: form.hp.value,
-          stam: form.stam.value,
-          weight: form.weight.value,
-          melee: form.melee.value,
-          timestamp: Date.now()
-      });
-      
-      form.reset();
-      alert("Specimen Uploaded.");
-      switchTab('library');
-  });
-
-  // 5. DELETE DATA
-  async function handleDelete(id) {
-      if(confirm("Destroy this data pattern? (Cannot be undone)")) {
-          await deleteDoc(doc(db, "dinos", id));
-      }
-  }
-
-  // TAB SWITCHING
   window.switchTab = function(tabId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-      
       document.getElementById(tabId).classList.add('active');
       if(tabId === 'library') document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
       if(tabId === 'add') document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
