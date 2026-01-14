@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v11.1 (Delete All)</title>
+    <title>ARK Tribe Companion v12 (Sorting)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -40,7 +40,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            position: relative; /* For bottom positioning */
+            position: relative;
         }
 
         .nav-btn {
@@ -61,9 +61,8 @@
             box-shadow: 0 0 15px var(--tek-blue);
         }
 
-        /* DELETE ALL BUTTON */
         .btn-nuke {
-            margin-top: auto; /* Pushes to bottom */
+            margin-top: auto; 
             border-color: var(--danger);
             color: var(--danger);
             font-size: 0.8em;
@@ -86,7 +85,7 @@
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* HEADER */
+        /* HEADER & FILTERS */
         .header-controls {
             display: flex;
             justify-content: space-between;
@@ -105,6 +104,46 @@
             font-family: 'Orbitron', sans-serif;
         }
         .toggle-view-btn:hover { background: var(--tek-blue); color: black; }
+
+        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-chip {
+            border: 1px solid #555;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8em;
+            color: #888;
+            white-space: nowrap;
+        }
+        .filter-chip.active { border-color: var(--tek-blue); color: var(--tek-blue); background: var(--tek-dim); }
+
+        /* SORT BAR */
+        .sort-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            align-items: center;
+        }
+        .sort-label { font-size: 0.8em; color: #888; margin-right: 10px; }
+        .sort-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #888;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8em;
+        }
+        .sort-btn:hover { border-color: var(--tek-blue); color: white; }
+        .sort-btn.active {
+            background: var(--tek-blue);
+            color: black;
+            border-color: var(--tek-blue);
+            font-weight: bold;
+        }
 
         /* FORMS */
         input, select {
@@ -163,19 +202,6 @@
         .best-stat { color: var(--gold); font-weight: bold; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
         .best-stat::after { content: " ★"; font-size: 0.8em; }
 
-        /* FILTER BAR */
-        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-chip {
-            border: 1px solid #555;
-            padding: 5px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8em;
-            color: #888;
-            white-space: nowrap;
-        }
-        .filter-chip.active { border-color: var(--tek-blue); color: var(--tek-blue); background: var(--tek-dim); }
-
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em; color: #ccc; margin-top: 10px; }
         .badge { font-size: 0.7em; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; background: #333; color: #ccc; vertical-align: middle; }
 
@@ -204,7 +230,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v11</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v12</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -221,6 +247,18 @@
             </div>
             <button class="toggle-view-btn" onclick="toggleView()">☷ GRID / ☰ LIST</button>
         </div>
+        
+        <div class="sort-bar">
+            <span class="sort-label">SORT BY:</span>
+            <button class="sort-btn active" onclick="setSort('timestamp')" id="sort-recent">RECENT</button>
+            <button class="sort-btn" onclick="setSort('name')" id="sort-name">NAME</button>
+            <button class="sort-btn" onclick="setSort('level')" id="sort-level">LEVEL</button>
+            <button class="sort-btn" onclick="setSort('hp')" id="sort-hp">HP</button>
+            <button class="sort-btn" onclick="setSort('stam')" id="sort-stam">STAM</button>
+            <button class="sort-btn" onclick="setSort('weight')" id="sort-weight">WEIGHT</button>
+            <button class="sort-btn" onclick="setSort('melee')" id="sort-melee">MELEE</button>
+        </div>
+
         <div id="dino-feed">Loading Cryopods...</div>
     </div>
 
@@ -320,7 +358,11 @@
   
   let currentFilter = 'All';
   let viewMode = 'cards'; 
-  let allDinos = []; 
+  let allDinos = [];
+  
+  // Sorting State
+  let sortBy = 'timestamp';
+  let sortDesc = true;
 
   // 1. LISTEN TO DATABASE
   const q = query(collection(db, "dinos"), orderBy("timestamp", "desc"));
@@ -340,15 +382,55 @@
       renderMatchmaker(); 
   });
 
-  // 2. MAIN RENDER
+  // 2. SORTING LOGIC
+  window.setSort = function(criteria) {
+      if(sortBy === criteria) {
+          sortDesc = !sortDesc; // Toggle direction
+      } else {
+          sortBy = criteria;
+          sortDesc = true; // Default to Descending (High to Low)
+      }
+      
+      // Update UI Buttons
+      document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('sort-' + (criteria === 'timestamp' ? 'recent' : criteria));
+      if(activeBtn) activeBtn.classList.add('active');
+      
+      if(activeBtn) activeBtn.innerText = activeBtn.innerText.split(" ")[0] + (sortDesc ? " ▼" : " ▲");
+
+      renderList();
+  }
+
+  // 3. MAIN RENDER
   function renderList() {
       const feed = document.getElementById("dino-feed");
       feed.innerHTML = "";
       
-      const filtered = currentFilter === 'All' 
-          ? allDinos 
+      // Filter first
+      let filtered = currentFilter === 'All' 
+          ? [...allDinos] // Copy array
           : allDinos.filter(d => d.species === currentFilter);
 
+      // Then Sort
+      filtered.sort((a, b) => {
+          let valA = a[sortBy];
+          let valB = b[sortBy];
+          
+          // Number conversion for stats
+          if(sortBy !== 'name' && sortBy !== 'species') {
+              valA = Number(valA) || 0;
+              valB = Number(valB) || 0;
+          } else {
+              valA = valA.toLowerCase();
+              valB = valB.toLowerCase();
+          }
+
+          if (valA < valB) return sortDesc ? 1 : -1;
+          if (valA > valB) return sortDesc ? -1 : 1;
+          return 0;
+      });
+
+      // Calculate Max Stats for Highlights
       let maxStats = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
       if(currentFilter !== 'All') {
           filtered.forEach(d => {
@@ -602,6 +684,9 @@
           chip.innerText = species;
           chip.onclick = () => { 
               currentFilter = species; 
+              // Reset sort to default when changing species
+              sortBy = 'timestamp';
+              sortDesc = true;
               renderFilters(speciesList); 
               renderList(); 
               renderMatchmaker(); 
