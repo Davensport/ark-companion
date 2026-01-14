@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v12.2 (Polished)</title>
+    <title>ARK Tribe Companion v1.0.0 (Stable)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -119,14 +119,14 @@
 
         /* SORT BAR (Only visible in GRID mode) */
         .sort-bar {
-            display: flex; /* Changed dynamically by JS */
+            display: flex;
             gap: 10px;
             margin-bottom: 15px;
             background: rgba(0,0,0,0.3);
             padding: 10px;
             border-radius: 5px;
             align-items: center;
-            overflow-x: auto; /* Handle many buttons */
+            overflow-x: auto;
         }
         .sort-label { font-size: 0.8em; color: #888; margin-right: 10px; white-space: nowrap; }
         .sort-btn {
@@ -197,7 +197,6 @@
         .tek-table-container { overflow-x: auto; }
         .tek-table { width: 100%; border-collapse: collapse; font-size: 0.9em; color: #ccc; }
         
-        /* CLICKABLE HEADERS */
         .tek-table th { 
             text-align: left; 
             border-bottom: 2px solid var(--tek-blue); 
@@ -208,14 +207,8 @@
             transition: 0.2s;
             white-space: nowrap;
         }
-        .tek-table th:hover {
-            color: white;
-            background: rgba(0, 242, 255, 0.1);
-        }
-        .tek-table th.active-sort {
-            color: var(--gold);
-            border-bottom-color: var(--gold);
-        }
+        .tek-table th:hover { color: white; background: rgba(0, 242, 255, 0.1); }
+        .tek-table th.active-sort { color: var(--gold); border-bottom-color: var(--gold); }
 
         .tek-table td { border-bottom: 1px solid #333; padding: 10px; background: rgba(30, 30, 30, 0.5); }
         .tek-table tr:hover td { background: var(--tek-dim); }
@@ -252,7 +245,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v12.2</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.0.0</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -765,8 +758,7 @@
       if(tabId === 'library') document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
       if(tabId === 'matchmaker') {
           document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
-          // FORCE UPDATE BREEDING TAB ON CLICK
-          renderMatchmaker();
+          renderMatchmaker(); // Force refresh!
       }
       if(tabId === 'add') document.querySelector('.nav-btn:nth-child(4)').classList.add('active');
   }
