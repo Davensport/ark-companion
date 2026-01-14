@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v9 (Smart Match)</title>
+    <title>ARK Tribe Companion v11.1 (Delete All)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -40,6 +40,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            position: relative; /* For bottom positioning */
         }
 
         .nav-btn {
@@ -52,11 +53,26 @@
             transition: 0.2s;
             font-family: 'Orbitron', sans-serif;
             font-size: 0.9em;
+            text-transform: uppercase;
         }
         .nav-btn:hover, .nav-btn.active {
             background: var(--tek-blue);
             color: black;
             box-shadow: 0 0 15px var(--tek-blue);
+        }
+
+        /* DELETE ALL BUTTON */
+        .btn-nuke {
+            margin-top: auto; /* Pushes to bottom */
+            border-color: var(--danger);
+            color: var(--danger);
+            font-size: 0.8em;
+            text-align: center;
+        }
+        .btn-nuke:hover {
+            background: var(--danger);
+            color: black;
+            box-shadow: 0 0 15px var(--danger);
         }
 
         /* MAIN CONTENT */
@@ -131,6 +147,7 @@
             font-size: 0.8em;
             cursor: pointer;
             padding: 5px 10px;
+            margin-left: 5px;
         }
         .action-btn:hover { border-color: white; color: white; }
         .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
@@ -167,13 +184,9 @@
         .gender-col h3 { text-align: center; border-bottom: 2px solid; padding-bottom: 10px; }
         .male-col h3 { color: var(--blue); border-color: var(--blue); }
         .female-col h3 { color: var(--pink); border-color: var(--pink); }
-        
-        .match-card {
-            border: 1px solid #444; padding: 10px; margin-bottom: 10px; background: #1a1a1a;
-        }
+        .match-card { border: 1px solid #444; padding: 10px; margin-bottom: 10px; background: #1a1a1a; }
         .has-top-stat { color: var(--gold); font-size: 0.8em; display: block; margin-top: 5px;}
-
-        /* RECOMMENDATION ENGINE */
+        
         .recommendation-box {
             background: linear-gradient(45deg, rgba(0,0,0,0.8), rgba(20,20,20,0.9));
             border: 2px solid var(--success);
@@ -191,10 +204,12 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v9</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v11</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
-    <button class="nav-btn" onclick="switchTab('matchmaker')">♥ MATCHMAKER</button>
+    <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
+    
+    <button class="nav-btn btn-nuke" onclick="handleDeleteAll()">⚠ DELETE LIBRARY</button>
 </div>
 
 <div class="main-content">
@@ -210,7 +225,7 @@
     </div>
 
     <div id="matchmaker" class="view-section">
-        <h2 style="text-align:center; color:var(--gold);">BREEDING ADVISOR</h2>
+        <h2 style="text-align:center; color:var(--gold);">GENETIC ADVISOR</h2>
         <div style="text-align:center; margin-bottom:20px; color:#888;">
             Select a species in the Library tab first to see advice.
             <br><span id="matchmaker-species" style="color:var(--tek-blue); font-weight:bold; font-size:1.2em;"></span>
@@ -240,32 +255,10 @@
                 <div style="display:flex; gap:10px;">
                     <input list="speciesList" id="species" placeholder="Species (Start typing...)" required autocomplete="off">
                     <datalist id="speciesList">
-                         <option value="Achatina"><option value="Allosaurus"><option value="Ammonite"><option value="Angler"><option value="Ankylosaurus">
-                        <option value="Araneo"><option value="Archelon"><option value="Argentavis"><option value="Arthropluera"><option value="Baryonyx">
-                        <option value="Basilosaurus"><option value="Beelzebufo"><option value="Bison"><option value="Brontosaurus"><option value="Carbonemys">
-                        <option value="Carcharodontosaurus"><option value="Carnotaurus"><option value="Castoroides"><option value="Cat"><option value="Ceratosaurus">
-                        <option value="Chalicotherium"><option value="Cnidaria"><option value="Coelacanth"><option value="Compy"><option value="Cosmo">
-                        <option value="Daeodon"><option value="Deinosuchus"><option value="Deinotherium"><option value="Dilophosaur"><option value="Dimetrodon">
-                        <option value="Dimorphodon"><option value="Diplocaulus"><option value="Diplodocus"><option value="Dire Bear"><option value="Direwolf">
-                        <option value="Dodo"><option value="Doedicurus"><option value="Drakeling"><option value="Dreadnoughtus"><option value="Dreadmare">
-                        <option value="Dung Beetle"><option value="Dunkleosteus"><option value="Elderclaw"><option value="Electrophorus"><option value="Equus">
-                        <option value="Eurypterid"><option value="Gacha"><option value="Gallimimus"><option value="Gasbags"><option value="Giant Bee">
-                        <option value="Giganotosaurus"><option value="Gigantopithecus"><option value="Gigantoraptor"><option value="Helicoprion"><option value="Hesperornis">
-                        <option value="Hyaenodon"><option value="Ichthyornis"><option value="Ichthyosaurus"><option value="Iguanodon"><option value="Kairuku">
-                        <option value="Kaprosuchus"><option value="Kentrosaurus"><option value="Leech"><option value="Liopleurodon"><option value="Lymantria">
-                        <option value="Lystrosaurus"><option value="Maeguana"><option value="Mammoth"><option value="Managarmr"><option value="Manta">
-                        <option value="Mantis"><option value="Megalania"><option value="Megalodon"><option value="Megalosaurus"><option value="Meganeura">
-                        <option value="Megatherium"><option value="Mesopithecus"><option value="Microraptor"><option value="Minotaur"><option value="Morellatops">
-                        <option value="Mosasaurus"><option value="Moschops"><option value="Natrix"><option value="Onyc"><option value="Otter">
-                        <option value="Oviraptor"><option value="Ovis"><option value="Pachy"><option value="Pachyrhinosaurus"><option value="Paraceratherium">
-                        <option value="Parasaur"><option value="Pegomastax"><option value="Pelagornis"><option value="Phiomia"><option value="Piranha">
-                        <option value="Plesiosaur"><option value="Procoptodon"><option value="Pteranodon"><option value="Pulmonoscorpius"><option value="Purlovia">
-                        <option value="Pyromane"><option value="Quetzal"><option value="Raptor"><option value="Rex"><option value="Rhyniognatha">
-                        <option value="Sabertooth"><option value="Sabertooth Salmon"><option value="Sarco"><option value="Snow Owl"><option value="Spinosaurus">
-                        <option value="Stegosaurus"><option value="Tapejara"><option value="Terror Bird"><option value="Thanatos"><option value="Therizinosaurus">
-                        <option value="Thodes"><option value="Thorny Dragon"><option value="Thylacoleo"><option value="Titanoboa"><option value="Titanomyrma">
-                        <option value="Titanosaur"><option value="Triceratops"><option value="Trilobite"><option value="Troodon"><option value="Tusoteuthis">
-                        <option value="Unicorn"><option value="Velonasaur"><option value="Woolly Rhino"><option value="Wyvern"><option value="Xiphactinus"><option value="Yutyrannus">
+                        <option value="Rex"><option value="Yutyrannus"><option value="Therizinosaurus"><option value="Argentavis"><option value="Spino">
+                        <option value="Baryonyx"><option value="Thylacoleo"><option value="Daedon"><option value="Ankylosaurus"><option value="Doedicurus">
+                        <option value="Pteranodon"><option value="Giganotosaurus"><option value="Carcharodontosaurus"><option value="Basilosaurus"><option value="Tusoteuthis">
+                        <option value="Maeguana"><option value="Pyromane"><option value="Dreadnoughtus"><option value="Fasolasuchus">
                     </datalist>
 
                     <select id="status">
@@ -289,30 +282,12 @@
 
                 <label style="color:var(--gold);">Genetics (Points Only)</label>
                 <div class="stat-grid">
-                    <div>
-                        <small style="color:#666">HP</small>
-                        <input type="number" id="hp" placeholder="0-255" required>
-                    </div>
-                    <div>
-                        <small style="color:#666">Stam</small>
-                        <input type="number" id="stam" placeholder="0-255">
-                    </div>
-                    <div>
-                        <small style="color:#666">Oxygen</small>
-                        <input type="number" id="oxygen" placeholder="0-255">
-                    </div>
-                    <div>
-                        <small style="color:#666">Food</small>
-                        <input type="number" id="food" placeholder="0-255">
-                    </div>
-                    <div>
-                        <small style="color:#666">Weight</small>
-                        <input type="number" id="weight" placeholder="0-255">
-                    </div>
-                    <div>
-                        <small style="color:#666">Melee</small>
-                        <input type="number" id="melee" placeholder="0-255" required>
-                    </div>
+                    <div><small>HP</small><input type="number" id="hp" placeholder="0-255" required></div>
+                    <div><small>Stam</small><input type="number" id="stam" placeholder="0-255"></div>
+                    <div><small>Oxygen</small><input type="number" id="oxygen" placeholder="0-255"></div>
+                    <div><small>Food</small><input type="number" id="food" placeholder="0-255"></div>
+                    <div><small>Weight</small><input type="number" id="weight" placeholder="0-255"></div>
+                    <div><small>Melee</small><input type="number" id="melee" placeholder="0-255" required></div>
                 </div>
                 
                 <div style="display:flex; gap:10px; margin-top:20px;">
@@ -327,7 +302,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } 
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, writeBatch, getDocs } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   // --- 🔴 PASTE YOUR KEYS HERE 🔴 ---
@@ -447,7 +422,7 @@
       attachListeners();
   }
 
-  // 3. SMART MATCHMAKER (Genetic Logic)
+  // 3. MATCHMAKER
   function renderMatchmaker() {
       const recEngine = document.getElementById("recommendation-engine");
       const maleFeed = document.getElementById("male-feed");
@@ -466,7 +441,6 @@
       speciesLabel.innerText = "Analyzing: " + currentFilter;
       const speciesDinos = allDinos.filter(d => d.species === currentFilter);
       
-      // Calculate Max Stats
       let maxStats = { hp: 0, stam: 0, weight: 0, melee: 0 };
       speciesDinos.forEach(d => {
           if(Number(d.hp) > maxStats.hp) maxStats.hp = Number(d.hp);
@@ -475,7 +449,6 @@
           if(Number(d.melee) > maxStats.melee) maxStats.melee = Number(d.melee);
       });
 
-      // --- LOGIC: FIND BEST PAIR ---
       const males = speciesDinos.filter(d => d.sex === 'Male');
       const females = speciesDinos.filter(d => d.sex === 'Female');
       let bestPair = null;
@@ -485,7 +458,6 @@
           females.forEach(f => {
               let score = 0;
               let traits = [];
-              
               if(Number(m.hp) >= maxStats.hp || Number(f.hp) >= maxStats.hp) { score++; traits.push("Max HP"); }
               if(Number(m.stam) >= maxStats.stam || Number(f.stam) >= maxStats.stam) { score++; traits.push("Max Stam"); }
               if(Number(m.weight) >= maxStats.weight || Number(f.weight) >= maxStats.weight) { score++; traits.push("Max Weight"); }
@@ -498,7 +470,6 @@
           });
       });
 
-      // Render Recommendation
       if(bestPair && highestScore > 0) {
           recEngine.innerHTML = `
             <div class="recommendation-box">
@@ -515,14 +486,12 @@
           recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found for this species.</div>`;
       }
 
-      // Render Standard Lists (Best Males/Females)
       const createMatchCard = (dino) => {
           let accolades = "";
           if(Number(dino.hp) >= maxStats.hp) accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`;
           if(Number(dino.melee) >= maxStats.melee) accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`;
           if(Number(dino.stam) >= maxStats.stam) accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`;
           if(Number(dino.weight) >= maxStats.weight) accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`;
-
           if(accolades === "") return ""; 
 
           return `
@@ -602,6 +571,21 @@
 
   async function handleDelete(id) {
       if(confirm("Delete this entry?")) await deleteDoc(doc(db, "dinos", id));
+  }
+  
+  // --- MASS DELETE FUNCTION ---
+  window.handleDeleteAll = async function() {
+      if(!confirm("⚠️ DANGER ZONE ⚠️\n\nThis will delete EVERY dinosaur in the library.\n\nAre you sure?")) return;
+      if(!confirm("Double Check: This cannot be undone. Delete all?")) return;
+      
+      const q = query(collection(db, "dinos"));
+      const snapshot = await getDocs(q);
+      
+      snapshot.forEach(async (docSnap) => {
+          await deleteDoc(doc(db, "dinos", docSnap.id));
+      });
+      
+      alert("Library wiped.");
   }
 
   window.toggleView = function() {
