@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.2.1 (Scoring Fix)</title>
+    <title>ARK Tribe Companion v1.3.0 (Strategist)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -17,6 +17,7 @@
             --pink: #ff69b4;
             --blue: #4da6ff;
             --success: #00ff9d;
+            --purple: #bf00ff;
         }
         
         body {
@@ -161,7 +162,7 @@
             gap: 5px;
         }
         .priority-label { font-size: 0.9em; color: #aaa; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-bottom: 10px;}
-        .toggle-check { display: none; } /* Hide default checkbox */
+        .toggle-check { display: none; }
         .toggle-btn {
             display: inline-block;
             padding: 5px 15px;
@@ -178,6 +179,21 @@
             border-color: var(--tek-blue);
             box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
         }
+
+        /* STRATEGY BOX (NEW) */
+        .strategy-container {
+            border: 1px solid var(--purple);
+            background: rgba(40, 0, 60, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .strat-header { color: var(--purple); font-weight: bold; font-size: 1.1em; border-bottom: 1px solid var(--purple); padding-bottom: 10px; margin-bottom: 10px;}
+        .strat-step { margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; }
+        .step-num { background: var(--purple); color: white; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; }
+        .step-text { color: #ddd; font-size: 0.9em; line-height: 1.4em;}
+        .holder-tag { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; color: #aaa; margin-right: 5px;}
 
         /* FORMS */
         input, select {
@@ -253,7 +269,6 @@
         
         .badge { font-size: 0.7em; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; background: #333; color: #ccc; vertical-align: middle; margin-right: 5px; }
         
-        /* NEW MUTATION BADGES */
         .mut-clean { background: rgba(0, 255, 157, 0.2); color: var(--success); border: 1px solid var(--success); }
         .mut-dirty { background: rgba(255, 215, 0, 0.2); color: var(--gold); border: 1px solid var(--gold); }
         .mut-capped { background: rgba(255, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); font-weight: bold; }
@@ -283,11 +298,10 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.2.1</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.3.0</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
-    
     <button class="nav-btn btn-nuke" onclick="handleDeleteAll()">⚠ DELETE LIBRARY</button>
 </div>
 
@@ -319,45 +333,23 @@
     </div>
 
     <div id="matchmaker" class="view-section">
-        <h2 style="text-align:center; color:var(--gold);">GENETIC ADVISOR</h2>
+        <h2 style="text-align:center; color:var(--gold);">GENETIC STRATEGIST</h2>
         
         <div class="priority-box">
             <div class="priority-label">SCORING PRIORITIES:</div>
-            
-            <label>
-                <input type="checkbox" class="toggle-check" id="prio-hp" checked onchange="renderMatchmaker()">
-                <span class="toggle-btn">HP</span>
-            </label>
-            
-            <label>
-                <input type="checkbox" class="toggle-check" id="prio-stam" checked onchange="renderMatchmaker()">
-                <span class="toggle-btn">STAM</span>
-            </label>
-
-            <label>
-                <input type="checkbox" class="toggle-check" id="prio-oxy" onchange="renderMatchmaker()">
-                <span class="toggle-btn">OXYGEN</span>
-            </label>
-
-            <label>
-                <input type="checkbox" class="toggle-check" id="prio-food" onchange="renderMatchmaker()">
-                <span class="toggle-btn">FOOD</span>
-            </label>
-
-            <label>
-                <input type="checkbox" class="toggle-check" id="prio-weight" checked onchange="renderMatchmaker()">
-                <span class="toggle-btn">WEIGHT</span>
-            </label>
-
-            <label>
-                <input type="checkbox" class="toggle-check" id="prio-melee" checked onchange="renderMatchmaker()">
-                <span class="toggle-btn">MELEE</span>
-            </label>
+            <label><input type="checkbox" class="toggle-check" id="prio-hp" checked onchange="renderMatchmaker()"><span class="toggle-btn">HP</span></label>
+            <label><input type="checkbox" class="toggle-check" id="prio-stam" checked onchange="renderMatchmaker()"><span class="toggle-btn">STAM</span></label>
+            <label><input type="checkbox" class="toggle-check" id="prio-oxy" onchange="renderMatchmaker()"><span class="toggle-btn">OXYGEN</span></label>
+            <label><input type="checkbox" class="toggle-check" id="prio-food" onchange="renderMatchmaker()"><span class="toggle-btn">FOOD</span></label>
+            <label><input type="checkbox" class="toggle-check" id="prio-weight" checked onchange="renderMatchmaker()"><span class="toggle-btn">WEIGHT</span></label>
+            <label><input type="checkbox" class="toggle-check" id="prio-melee" checked onchange="renderMatchmaker()"><span class="toggle-btn">MELEE</span></label>
         </div>
 
         <div style="text-align:center; margin-bottom:20px; color:#888;">
             Analyzing: <span id="matchmaker-species" style="color:var(--tek-blue); font-weight:bold; font-size:1.2em;"></span>
         </div>
+        
+        <div id="strategy-board"></div>
         
         <div id="recommendation-engine"></div>
 
@@ -378,7 +370,6 @@
             <h3 id="formTitle">// UPLOAD NEW SPECIMEN</h3>
             <form id="addDinoForm">
                 <input type="hidden" id="docId">
-
                 <label>Classification</label>
                 <div style="display:flex; gap:10px;">
                     <input list="speciesList" id="species" placeholder="Species (Start typing...)" required autocomplete="off">
@@ -388,7 +379,6 @@
                         <option value="Pteranodon"><option value="Giganotosaurus"><option value="Carcharodontosaurus"><option value="Basilosaurus"><option value="Tusoteuthis">
                         <option value="Maeguana"><option value="Pyromane"><option value="Dreadnoughtus"><option value="Fasolasuchus">
                     </datalist>
-
                     <select id="status">
                         <option value="Standard">Standard</option>
                         <option value="Main Breeder">Main Breeder (Gold)</option>
@@ -396,10 +386,8 @@
                         <option value="Fodder">Backup/Fodder</option>
                     </select>
                 </div>
-                
                 <label>Identity</label>
                 <input type="text" id="name" placeholder="Name" required>
-                
                 <div style="display:flex; gap:10px;">
                     <input type="number" id="level" placeholder="Total Lvl" required>
                     <select id="sex">
@@ -408,7 +396,6 @@
                     </select>
                     <input type="number" id="mutations" placeholder="Muts" style="width:80px;">
                 </div>
-
                 <label style="color:var(--gold);">Genetics (Points Only)</label>
                 <div class="stat-grid">
                     <div><small>HP</small><input type="number" id="hp" placeholder="0-255" required></div>
@@ -418,7 +405,6 @@
                     <div><small>Weight</small><input type="number" id="weight" placeholder="0-255"></div>
                     <div><small>Melee</small><input type="number" id="melee" placeholder="0-255" required></div>
                 </div>
-                
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button type="button" class="nav-btn" style="flex:1; border-color:#555; color:#888;" onclick="switchTab('library')">CANCEL</button>
                     <button type="submit" class="nav-btn" style="flex:2;" id="submitBtn">SAVE DATA</button>
@@ -450,36 +436,27 @@
   let currentFilter = 'All';
   let viewMode = 'table'; 
   let allDinos = [];
-  
   let sortBy = 'timestamp';
   let sortDesc = true;
 
-  // 1. LISTEN
   const q = query(collection(db, "dinos"), orderBy("timestamp", "desc"));
   
   onSnapshot(q, (snapshot) => {
       allDinos = [];
       const speciesSet = new Set(); 
-
       snapshot.forEach((docSnap) => {
           const data = docSnap.data();
           allDinos.push({ id: docSnap.id, ...data });
           speciesSet.add(data.species);
       });
-
       renderFilters(Array.from(speciesSet));
       renderList();
       renderMatchmaker(); 
   });
 
-  // 2. SORTING
   window.setSort = function(criteria) {
-      if(sortBy === criteria) {
-          sortDesc = !sortDesc; 
-      } else {
-          sortBy = criteria;
-          sortDesc = true; 
-      }
+      if(sortBy === criteria) sortDesc = !sortDesc; 
+      else { sortBy = criteria; sortDesc = true; }
       
       document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
       const activeBtn = document.getElementById('sort-' + (criteria === 'timestamp' ? 'recent' : criteria));
@@ -487,11 +464,9 @@
           activeBtn.classList.add('active');
           activeBtn.innerText = activeBtn.innerText.split(" ")[0] + (sortDesc ? " ▼" : " ▲");
       }
-
       renderList();
   }
 
-  // 3. RENDER LIST
   function renderList() {
       const feed = document.getElementById("dino-feed");
       const sortBar = document.getElementById("gridSortBar");
@@ -500,14 +475,11 @@
       if(viewMode === 'cards') sortBar.style.display = "flex";
       else sortBar.style.display = "none";
       
-      let filtered = currentFilter === 'All' 
-          ? [...allDinos] 
-          : allDinos.filter(d => d.species === currentFilter);
+      let filtered = currentFilter === 'All' ? [...allDinos] : allDinos.filter(d => d.species === currentFilter);
 
       filtered.sort((a, b) => {
           let valA = a[sortBy];
           let valB = b[sortBy];
-          
           if(sortBy !== 'name' && sortBy !== 'species') {
               valA = Number(valA) || 0;
               valB = Number(valB) || 0;
@@ -515,7 +487,6 @@
               valA = valA.toLowerCase();
               valB = valB.toLowerCase();
           }
-
           if (valA < valB) return sortDesc ? 1 : -1;
           if (valA > valB) return sortDesc ? -1 : 1;
           return 0;
@@ -571,10 +542,8 @@
               feed.innerHTML += html;
           });
       } else {
-          // TABLE VIEW
           const getArrow = (col) => sortBy === col ? (sortDesc ? " ▼" : " ▲") : "";
           const getClass = (col) => sortBy === col ? "active-sort" : "";
-
           let rows = '';
           filtered.forEach(dino => {
                rows += `
@@ -622,22 +591,25 @@
       attachListeners();
   }
 
-  // 3. MATCHMAKER (UPDATED FOR PRIORITIES)
+  // --- LOGIC ENGINE UPDATE ---
   window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
+      const stratBoard = document.getElementById("strategy-board");
       const maleFeed = document.getElementById("male-feed");
       const femaleFeed = document.getElementById("female-feed");
       const speciesLabel = document.getElementById("matchmaker-species");
       
-      // CHECK PRIORITIES
-      const useHP = document.getElementById("prio-hp").checked;
-      const useStam = document.getElementById("prio-stam").checked;
-      const useOxy = document.getElementById("prio-oxy").checked;
-      const useFood = document.getElementById("prio-food").checked;
-      const useWeight = document.getElementById("prio-weight").checked;
-      const useMelee = document.getElementById("prio-melee").checked;
+      const priorities = {
+          hp: document.getElementById("prio-hp").checked,
+          stam: document.getElementById("prio-stam").checked,
+          oxygen: document.getElementById("prio-oxy").checked,
+          food: document.getElementById("prio-food").checked,
+          weight: document.getElementById("prio-weight").checked,
+          melee: document.getElementById("prio-melee").checked,
+      };
 
       recEngine.innerHTML = "";
+      stratBoard.innerHTML = "";
       maleFeed.innerHTML = "";
       femaleFeed.innerHTML = "";
 
@@ -649,7 +621,10 @@
       speciesLabel.innerText = "Analyzing: " + currentFilter;
       const speciesDinos = allDinos.filter(d => d.species === currentFilter);
       
+      // 1. CALCULATE MAX STATS
       let maxStats = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
+      let holders = { hp: [], stam: [], oxygen: [], food: [], weight: [], melee: [] };
+      
       speciesDinos.forEach(d => {
           if(Number(d.hp) > maxStats.hp) maxStats.hp = Number(d.hp);
           if(Number(d.stam) > maxStats.stam) maxStats.stam = Number(d.stam);
@@ -659,34 +634,103 @@
           if(Number(d.melee) > maxStats.melee) maxStats.melee = Number(d.melee);
       });
 
+      // 2. IDENTIFY STAT HOLDERS (For Strategy)
+      speciesDinos.forEach(d => {
+          if(Number(d.hp) === maxStats.hp) holders.hp.push(d);
+          if(Number(d.stam) === maxStats.stam) holders.stam.push(d);
+          if(Number(d.oxygen) === maxStats.oxygen) holders.oxygen.push(d);
+          if(Number(d.food) === maxStats.food) holders.food.push(d);
+          if(Number(d.weight) === maxStats.weight) holders.weight.push(d);
+          if(Number(d.melee) === maxStats.melee) holders.melee.push(d);
+      });
+
+      // 3. GENERATE STRATEGY
+      let stratHTML = `<div class="strategy-container"><div class="strat-header">⚠️ BREEDING STRATEGY DETECTED</div>`;
+      let stratSteps = [];
+      let conflictDetected = false;
+      let conflictType = "";
+
+      // Check for Gender Conflicts in Priorities
+      let activeHolders = [];
+      if(priorities.hp) activeHolders.push(...holders.hp);
+      if(priorities.stam) activeHolders.push(...holders.stam);
+      if(priorities.melee) activeHolders.push(...holders.melee);
+      if(priorities.weight) activeHolders.push(...holders.weight);
+
+      // Simplistic conflict check: Do we have Males carrying distinct top stats?
+      const distinctMales = [...new Set(activeHolders.filter(d => d.sex === 'Male').map(d => d.id))];
+      const distinctFemales = [...new Set(activeHolders.filter(d => d.sex === 'Female').map(d => d.id))];
+
+      // Logic: If we need stats from 2 different males, we need a gender swap.
+      if (distinctMales.length > 1 && distinctFemales.length === 0) {
+           stratSteps.push({
+               text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Males. You cannot combine them directly.`,
+               type: 'warn'
+           });
+           stratSteps.push({
+               text: `<b>STEP 1:</b> Breed <b>${activeHolders[0].name}</b> with ANY clean female until you get a <b>FEMALE</b> baby with his stats.`,
+               type: 'action'
+           });
+           stratSteps.push({
+               text: `<b>STEP 2:</b> Breed that new Female with your other Best Male.`,
+               type: 'action'
+           });
+      } 
+      else if (distinctFemales.length > 1 && distinctMales.length === 0) {
+           stratSteps.push({
+               text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Females.`,
+               type: 'warn'
+           });
+           stratSteps.push({
+               text: `<b>STEP 1:</b> Breed one of them with a clean male to get a <b>MALE</b> copy of her stats.`,
+               type: 'action'
+           });
+      }
+      else if (distinctMales.length >= 1 && distinctFemales.length >= 1) {
+           stratSteps.push({
+               text: `<b>PATH IS CLEAR:</b> You have the stats split between Males and Females. You can combine them directly!`,
+               type: 'good'
+           });
+      } else {
+           // One super dino?
+           stratSteps.push({
+               text: `<b>READY FOR MUTATIONS:</b> It looks like one dino holds most of the cards. Pair with Clean partners to hunt for mutations!`,
+               type: 'good'
+           });
+      }
+      
+      stratSteps.forEach((s, i) => {
+          stratHTML += `<div class="strat-step"><span class="step-num">${i+1}</span><span class="step-text">${s.text}</span></div>`;
+      });
+      stratHTML += `</div>`;
+      stratBoard.innerHTML = stratHTML;
+
+
+      // 4. FIND BEST PAIR (Existing Logic)
       const males = speciesDinos.filter(d => d.sex === 'Male');
       const females = speciesDinos.filter(d => d.sex === 'Female');
       let bestPair = null;
       let highestScore = -1;
-
-      // CALCULATE MAX POSSIBLE SCORE BASED ON TOGGLES
-      let maxPossiblePoints = 0.5; // Starts with Clean Mom bonus
-      if(useHP) maxPossiblePoints++;
-      if(useStam) maxPossiblePoints++;
-      if(useOxy) maxPossiblePoints++;
-      if(useFood) maxPossiblePoints++;
-      if(useWeight) maxPossiblePoints++;
-      if(useMelee) maxPossiblePoints++;
+      let maxPossiblePoints = 0.5; 
+      if(priorities.hp) maxPossiblePoints++;
+      if(priorities.stam) maxPossiblePoints++;
+      if(priorities.oxygen) maxPossiblePoints++;
+      if(priorities.food) maxPossiblePoints++;
+      if(priorities.weight) maxPossiblePoints++;
+      if(priorities.melee) maxPossiblePoints++;
 
       males.forEach(m => {
           females.forEach(f => {
               let score = 0;
               let traits = [];
-              // PREFER CLEAN FEMALES (Logic: Muts < 20)
               if(Number(f.mutations || 0) < 20) score += 0.5;
 
-              // DYNAMIC SCORING BASED ON TOGGLES
-              if(useHP && (Number(m.hp) >= maxStats.hp || Number(f.hp) >= maxStats.hp)) { score++; traits.push("Max HP"); }
-              if(useStam && (Number(m.stam) >= maxStats.stam || Number(f.stam) >= maxStats.stam)) { score++; traits.push("Max Stam"); }
-              if(useOxy && (Number(m.oxygen) >= maxStats.oxygen || Number(f.oxygen) >= maxStats.oxygen)) { score++; traits.push("Max Oxy"); }
-              if(useFood && (Number(m.food) >= maxStats.food || Number(f.food) >= maxStats.food)) { score++; traits.push("Max Food"); }
-              if(useWeight && (Number(m.weight) >= maxStats.weight || Number(f.weight) >= maxStats.weight)) { score++; traits.push("Max Weight"); }
-              if(useMelee && (Number(m.melee) >= maxStats.melee || Number(f.melee) >= maxStats.melee)) { score++; traits.push("Max Melee"); }
+              if(priorities.hp && (Number(m.hp) >= maxStats.hp || Number(f.hp) >= maxStats.hp)) { score++; traits.push("Max HP"); }
+              if(priorities.stam && (Number(m.stam) >= maxStats.stam || Number(f.stam) >= maxStats.stam)) { score++; traits.push("Max Stam"); }
+              if(priorities.oxygen && (Number(m.oxygen) >= maxStats.oxygen || Number(f.oxygen) >= maxStats.oxygen)) { score++; traits.push("Max Oxy"); }
+              if(priorities.food && (Number(m.food) >= maxStats.food || Number(f.food) >= maxStats.food)) { score++; traits.push("Max Food"); }
+              if(priorities.weight && (Number(m.weight) >= maxStats.weight || Number(f.weight) >= maxStats.weight)) { score++; traits.push("Max Weight"); }
+              if(priorities.melee && (Number(m.melee) >= maxStats.melee || Number(f.melee) >= maxStats.melee)) { score++; traits.push("Max Melee"); }
 
               if(score > highestScore) {
                   highestScore = score;
@@ -696,9 +740,7 @@
       });
 
       if(bestPair && highestScore > 0) {
-          // Calculate Percentage
           let pct = Math.round((highestScore / maxPossiblePoints) * 100);
-          
           recEngine.innerHTML = `
             <div class="recommendation-box">
                 <span class="rec-score">★ BEST MATCH: ${highestScore} / ${maxPossiblePoints} (${pct}%)</span>
@@ -711,27 +753,19 @@
             </div>
           `;
       } else {
-          recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found for your selected priorities.</div>`;
+          recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found.</div>`;
       }
 
       const createMatchCard = (dino) => {
           let accolades = "";
-          // Only show accolades if priority is checked
-          if(useHP && Number(dino.hp) >= maxStats.hp) accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`;
-          if(useMelee && Number(dino.melee) >= maxStats.melee) accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`;
-          if(useStam && Number(dino.stam) >= maxStats.stam) accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`;
-          if(useWeight && Number(dino.weight) >= maxStats.weight) accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`;
-          if(useOxy && Number(dino.oxygen) >= maxStats.oxygen) accolades += `<span class="has-top-stat">★ BEST OXY (${dino.oxygen})</span>`;
-          if(useFood && Number(dino.food) >= maxStats.food) accolades += `<span class="has-top-stat">★ BEST FOOD (${dino.food})</span>`;
-          
+          if(priorities.hp && Number(dino.hp) >= maxStats.hp) accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`;
+          if(priorities.melee && Number(dino.melee) >= maxStats.melee) accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`;
+          if(priorities.stam && Number(dino.stam) >= maxStats.stam) accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`;
+          if(priorities.weight && Number(dino.weight) >= maxStats.weight) accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`;
+          if(priorities.oxygen && Number(dino.oxygen) >= maxStats.oxygen) accolades += `<span class="has-top-stat">★ BEST OXY (${dino.oxygen})</span>`;
+          if(priorities.food && Number(dino.food) >= maxStats.food) accolades += `<span class="has-top-stat">★ BEST FOOD (${dino.food})</span>`;
           if(accolades === "") return ""; 
-
-          return `
-            <div class="match-card">
-                <strong>${dino.name}</strong> <small>(Muts: ${dino.mutations || 0})</small>
-                ${accolades}
-            </div>
-          `;
+          return `<div class="match-card"><strong>${dino.name}</strong> <small>(Muts: ${dino.mutations || 0})</small>${accolades}</div>`;
       };
 
       speciesDinos.forEach(dino => {
@@ -743,16 +777,12 @@
       });
   }
 
-  function isBest(val, max) {
-      if(currentFilter === 'All') return '';
-      return (Number(val) >= max && max > 0) ? 'best-stat' : '';
-  }
-
+  // LISTENERS REMAIN THE SAME
+  function isBest(val, max) { if(currentFilter === 'All') return ''; return (Number(val) >= max && max > 0) ? 'best-stat' : ''; }
   function attachListeners() {
       document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', (e) => handleDelete(e.target.dataset.id)));
       document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => handleEdit(e.target.dataset.id)));
   }
-
   function handleEdit(id) {
       const dino = allDinos.find(d => d.id === id);
       if(!dino) return;
@@ -763,19 +793,16 @@
       document.getElementById('level').value = dino.level;
       document.getElementById('sex').value = dino.sex;
       document.getElementById('mutations').value = dino.mutations || 0;
-      
       document.getElementById('hp').value = dino.hp;
       document.getElementById('stam').value = dino.stam;
       document.getElementById('oxygen').value = dino.oxygen;
       document.getElementById('food').value = dino.food;
       document.getElementById('weight').value = dino.weight;
       document.getElementById('melee').value = dino.melee;
-
       document.getElementById('formTitle').innerText = "// EDITING: " + dino.name.toUpperCase();
       document.getElementById('submitBtn').innerText = "UPDATE ENTRY";
       switchTab('add');
   }
-
   document.getElementById("addDinoForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.target;
@@ -802,30 +829,16 @@
           switchTab('library');
       } catch(err) { console.error(err); alert("Error saving data."); }
   });
-
-  async function handleDelete(id) {
-      if(confirm("Delete this entry?")) await deleteDoc(doc(db, "dinos", id));
-  }
-  
+  async function handleDelete(id) { if(confirm("Delete this entry?")) await deleteDoc(doc(db, "dinos", id)); }
   window.handleDeleteAll = async function() {
       if(!confirm("⚠️ DANGER ZONE ⚠️\n\nThis will delete EVERY dinosaur in the library.\n\nAre you sure?")) return;
       if(!confirm("Double Check: This cannot be undone. Delete all?")) return;
-      
       const q = query(collection(db, "dinos"));
       const snapshot = await getDocs(q);
-      
-      snapshot.forEach(async (docSnap) => {
-          await deleteDoc(doc(db, "dinos", docSnap.id));
-      });
-      
+      snapshot.forEach(async (docSnap) => { await deleteDoc(doc(db, "dinos", docSnap.id)); });
       alert("Library wiped.");
   }
-
-  window.toggleView = function() {
-      viewMode = viewMode === 'cards' ? 'table' : 'cards';
-      renderList();
-  }
-
+  window.toggleView = function() { viewMode = viewMode === 'cards' ? 'table' : 'cards'; renderList(); }
   function renderFilters(speciesList) {
       const bar = document.getElementById("speciesFilterBar");
       bar.innerHTML = `<span class="filter-chip ${currentFilter === 'All' ? 'active' : ''}" id="filter-all">All Species</span>`;
@@ -833,40 +846,23 @@
           const chip = document.createElement('span');
           chip.className = `filter-chip ${currentFilter === species ? 'active' : ''}`;
           chip.innerText = species;
-          chip.onclick = () => { 
-              currentFilter = species; 
-              sortBy = 'timestamp';
-              sortDesc = true;
-              renderFilters(speciesList); 
-              renderList(); 
-              renderMatchmaker(); 
-          };
+          chip.onclick = () => { currentFilter = species; sortBy = 'timestamp'; sortDesc = true; renderFilters(speciesList); renderList(); renderMatchmaker(); };
           bar.appendChild(chip);
       });
-      document.getElementById('filter-all').onclick = () => { 
-          currentFilter = 'All'; 
-          renderFilters(speciesList); 
-          renderList();
-          renderMatchmaker();
-      };
+      document.getElementById('filter-all').onclick = () => { currentFilter = 'All'; renderFilters(speciesList); renderList(); renderMatchmaker(); };
   }
-
   window.resetForm = function() {
       document.getElementById("addDinoForm").reset();
       document.getElementById('docId').value = "";
       document.getElementById('formTitle').innerText = "// UPLOAD NEW SPECIMEN";
       document.getElementById('submitBtn').innerText = "SAVE TO CLOUD";
   }
-
   window.switchTab = function(tabId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       if(tabId === 'library') document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
-      if(tabId === 'matchmaker') {
-          document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
-          renderMatchmaker();
-      }
+      if(tabId === 'matchmaker') { document.querySelector('.nav-btn:nth-child(3)').classList.add('active'); renderMatchmaker(); }
       if(tabId === 'add') document.querySelector('.nav-btn:nth-child(4)').classList.add('active');
   }
 </script>
