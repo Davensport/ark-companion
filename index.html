@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.3.1 (Stability)</title>
+    <title>ARK Tribe Companion v1.3.2 (Cleanup)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -297,7 +297,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.3.1</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.3.2</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -590,7 +590,7 @@
       attachListeners();
   }
 
-  // --- LOGIC ENGINE UPDATE (STABILITY) ---
+  // --- LOGIC ENGINE UPDATE (OBSOLETE FILTER) ---
   window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
       const stratBoard = document.getElementById("strategy-board");
@@ -643,8 +643,8 @@
           if(Number(d.melee) === maxStats.melee) holders.melee.push(d);
       });
 
-      // 3. GENERATE STRATEGY (SAME AS BEFORE)
-      let stratHTML = `<div class="strategy-container"><div class="strat-header">⚠️ BREEDING STRATEGY DETECTED</div>`;
+      // 3. GENERATE STRATEGY (ALWAYS SHOW)
+      let stratHTML = `<div class="strategy-container"><div class="strat-header">⚠️ BREEDING PLAN</div>`;
       let stratSteps = [];
       let activeHolders = [];
       if(priorities.hp) activeHolders.push(...holders.hp);
@@ -663,23 +663,21 @@
            stratSteps.push({ text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Females.`, type: 'warn' });
            stratSteps.push({ text: `<b>STEP 1:</b> Breed one of them with a clean male to get a <b>MALE</b> copy of her stats.`, type: 'action' });
       } else {
-           stratSteps.push({ text: `<b>PATH IS CLEAR:</b> You have valid pairs. Focus on locking in stats!`, type: 'good' });
+           stratSteps.push({ text: `<b>PATH IS CLEAR:</b> Valid Male/Female pairs detected. Focus on locking in stats!`, type: 'good' });
       }
       
       stratSteps.forEach((s, i) => { stratHTML += `<div class="strat-step"><span class="step-num">${i+1}</span><span class="step-text">${s.text}</span></div>`; });
       stratHTML += `</div>`;
-      if(stratSteps.length > 1) stratBoard.innerHTML = stratHTML; // Only show if strategy needed
+      stratBoard.innerHTML = stratHTML; // ALWAYS RENDER
 
 
-      // 4. FIND BEST PAIR (UPDATED LOGIC)
+      // 4. FIND BEST PAIR
       const males = speciesDinos.filter(d => d.sex === 'Male');
       const females = speciesDinos.filter(d => d.sex === 'Female');
       let bestPair = null;
       let highestScore = -1;
       let maxPossiblePoints = 0.5; 
       
-      // Max score is now dynamic: 1.5 per stat if both have it
-      // But for simplicity, we keep the % calculation loosely based on "Perfect Match"
       if(priorities.hp) maxPossiblePoints += 1.5;
       if(priorities.stam) maxPossiblePoints += 1.5;
       if(priorities.oxygen) maxPossiblePoints += 1.5;
@@ -695,18 +693,15 @@
 
               const checkStat = (prio, mVal, fVal, max, name) => {
                   if(!prio) return 0;
-                  let s = 0;
-                  // If BOTH have it: +1.5 (Guaranteed)
                   if(Number(mVal) >= max && Number(fVal) >= max) { 
-                      s += 1.5; 
                       traits.push(`Guaranteed ${name}`); 
+                      return 1.5; 
                   }
-                  // If ONE has it: +1.0 (55% Chance)
                   else if(Number(mVal) >= max || Number(fVal) >= max) { 
-                      s += 1.0; 
                       traits.push(`Potential ${name}`);
+                      return 1.0; 
                   }
-                  return s;
+                  return 0;
               };
 
               score += checkStat(priorities.hp, m.hp, f.hp, maxStats.hp, "HP");
@@ -725,7 +720,7 @@
 
       if(bestPair && highestScore > 0) {
           let pct = Math.round((highestScore / maxPossiblePoints) * 100);
-          if(pct > 100) pct = 100; // Cap visual at 100%
+          if(pct > 100) pct = 100;
           
           recEngine.innerHTML = `
             <div class="recommendation-box">
@@ -742,28 +737,80 @@
           recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found.</div>`;
       }
 
-      const createMatchCard = (dino) => {
-          let accolades = "";
-          if(priorities.hp && Number(dino.hp) >= maxStats.hp) accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`;
-          if(priorities.melee && Number(dino.melee) >= maxStats.melee) accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`;
-          if(priorities.stam && Number(dino.stam) >= maxStats.stam) accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`;
-          if(priorities.weight && Number(dino.weight) >= maxStats.weight) accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`;
-          if(priorities.oxygen && Number(dino.oxygen) >= maxStats.oxygen) accolades += `<span class="has-top-stat">★ BEST OXY (${dino.oxygen})</span>`;
-          if(priorities.food && Number(dino.food) >= maxStats.food) accolades += `<span class="has-top-stat">★ BEST FOOD (${dino.food})</span>`;
-          
-          if(accolades === "") return ""; 
-          return `<div class="match-card"><strong>${dino.name}</strong> <small>(Muts: ${dino.mutations || 0})</small>${accolades}</div>`;
+      // 5. RENDER CARDS (WITH DOMINATION FILTER)
+      const isDominated = (dino, list) => {
+           // Skip filter if dirty/clean logic applies (don't hide clean dinos)
+           if(Number(dino.mutations || 0) < 20) return false; 
+
+           return list.some(other => {
+                if(other.id === dino.id) return false;
+                // If other is basically same or better in all relevant stats
+                let betterOrEqual = true;
+                if(priorities.hp && Number(other.hp) < Number(dino.hp)) betterOrEqual = false;
+                if(priorities.melee && Number(other.melee) < Number(dino.melee)) betterOrEqual = false;
+                if(priorities.stam && Number(other.stam) < Number(dino.stam)) betterOrEqual = false;
+                if(priorities.weight && Number(other.weight) < Number(dino.weight)) betterOrEqual = false;
+                // Add more logic here if strict domination is needed
+                return betterOrEqual;
+           });
       };
 
+      // Helper to generate HTML
+      const createMatchCard = (dino) => {
+          let accolades = "";
+          let score = 0;
+          if(priorities.hp && Number(dino.hp) >= maxStats.hp) { accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`; score++; }
+          if(priorities.melee && Number(dino.melee) >= maxStats.melee) { accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`; score++; }
+          if(priorities.stam && Number(dino.stam) >= maxStats.stam) { accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`; score++; }
+          if(priorities.weight && Number(dino.weight) >= maxStats.weight) { accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`; score++; }
+          if(priorities.oxygen && Number(dino.oxygen) >= maxStats.oxygen) { accolades += `<span class="has-top-stat">★ BEST OXY (${dino.oxygen})</span>`; score++; }
+          if(priorities.food && Number(dino.food) >= maxStats.food) { accolades += `<span class="has-top-stat">★ BEST FOOD (${dino.food})</span>`; score++; }
+          
+          if(accolades === "") return null; 
+          return { html: `<div class="match-card"><strong>${dino.name}</strong> <small>(Muts: ${dino.mutations || 0})</small>${accolades}</div>`, score: score, dino: dino };
+      };
+
+      // Process Lists
+      let maleCards = [];
+      let femaleCards = [];
+
       speciesDinos.forEach(dino => {
-          const cardHtml = createMatchCard(dino);
-          if(cardHtml) {
-              if(dino.sex === 'Male') maleFeed.innerHTML += cardHtml;
-              else femaleFeed.innerHTML += cardHtml;
+          const cardObj = createMatchCard(dino);
+          if(cardObj) {
+              if(dino.sex === 'Male') maleCards.push(cardObj);
+              else femaleCards.push(cardObj);
           }
       });
+
+      // Simple filter: If someone else has strictly MORE best stats, hide the weak ones.
+      // E.g., F2 has (HP, Melee). F1 has (Melee). F2 > F1.
+      const filterList = (list) => {
+          return list.filter(item => {
+              // Keep item if NO ONE ELSE is strictly better
+              return !list.some(other => {
+                 if(other.dino.id === item.dino.id) return false;
+                 // Does 'other' have ALL of 'item's accolades plus more?
+                 // Simple proxy: If 'other' score > 'item' score, and 'item' has no unique max stats...
+                 // Let's use specific stats check
+                 let dominated = true;
+                 if(priorities.hp && Number(item.dino.hp) >= maxStats.hp && Number(other.dino.hp) < maxStats.hp) dominated = false;
+                 if(priorities.melee && Number(item.dino.melee) >= maxStats.melee && Number(other.dino.melee) < maxStats.melee) dominated = false;
+                 if(priorities.stam && Number(item.dino.stam) >= maxStats.stam && Number(other.dino.stam) < maxStats.stam) dominated = false;
+                 // ... (Checks for unique value)
+                 
+                 // If item has FEWER accolades than other, and doesn't have anything unique, hide it.
+                 if(item.score < other.score && dominated) return true;
+                 return false;
+              });
+          });
+      };
+
+      // RENDER FILTERED LISTS
+      filterList(maleCards).forEach(c => maleFeed.innerHTML += c.html);
+      filterList(femaleCards).forEach(c => femaleFeed.innerHTML += c.html);
   }
 
+  // LISTENERS REMAIN THE SAME
   function isBest(val, max) { if(currentFilter === 'All') return ''; return (Number(val) >= max && max > 0) ? 'best-stat' : ''; }
   function attachListeners() {
       document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', (e) => handleDelete(e.target.dataset.id)));
