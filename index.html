@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.3.0 (Strategist)</title>
+    <title>ARK Tribe Companion v1.3.1 (Stability)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -180,7 +180,7 @@
             box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
         }
 
-        /* STRATEGY BOX (NEW) */
+        /* STRATEGY BOX */
         .strategy-container {
             border: 1px solid var(--purple);
             background: rgba(40, 0, 60, 0.4);
@@ -193,7 +193,6 @@
         .strat-step { margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; }
         .step-num { background: var(--purple); color: white; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; }
         .step-text { color: #ddd; font-size: 0.9em; line-height: 1.4em;}
-        .holder-tag { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; color: #aaa; margin-right: 5px;}
 
         /* FORMS */
         input, select {
@@ -298,7 +297,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.3.0</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.3.1</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -591,7 +590,7 @@
       attachListeners();
   }
 
-  // --- LOGIC ENGINE UPDATE ---
+  // --- LOGIC ENGINE UPDATE (STABILITY) ---
   window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
       const stratBoard = document.getElementById("strategy-board");
@@ -634,7 +633,7 @@
           if(Number(d.melee) > maxStats.melee) maxStats.melee = Number(d.melee);
       });
 
-      // 2. IDENTIFY STAT HOLDERS (For Strategy)
+      // 2. IDENTIFY STAT HOLDERS
       speciesDinos.forEach(d => {
           if(Number(d.hp) === maxStats.hp) holders.hp.push(d);
           if(Number(d.stam) === maxStats.stam) holders.stam.push(d);
@@ -644,80 +643,49 @@
           if(Number(d.melee) === maxStats.melee) holders.melee.push(d);
       });
 
-      // 3. GENERATE STRATEGY
+      // 3. GENERATE STRATEGY (SAME AS BEFORE)
       let stratHTML = `<div class="strategy-container"><div class="strat-header">⚠️ BREEDING STRATEGY DETECTED</div>`;
       let stratSteps = [];
-      let conflictDetected = false;
-      let conflictType = "";
-
-      // Check for Gender Conflicts in Priorities
       let activeHolders = [];
       if(priorities.hp) activeHolders.push(...holders.hp);
       if(priorities.stam) activeHolders.push(...holders.stam);
       if(priorities.melee) activeHolders.push(...holders.melee);
       if(priorities.weight) activeHolders.push(...holders.weight);
 
-      // Simplistic conflict check: Do we have Males carrying distinct top stats?
       const distinctMales = [...new Set(activeHolders.filter(d => d.sex === 'Male').map(d => d.id))];
       const distinctFemales = [...new Set(activeHolders.filter(d => d.sex === 'Female').map(d => d.id))];
 
-      // Logic: If we need stats from 2 different males, we need a gender swap.
       if (distinctMales.length > 1 && distinctFemales.length === 0) {
-           stratSteps.push({
-               text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Males. You cannot combine them directly.`,
-               type: 'warn'
-           });
-           stratSteps.push({
-               text: `<b>STEP 1:</b> Breed <b>${activeHolders[0].name}</b> with ANY clean female until you get a <b>FEMALE</b> baby with his stats.`,
-               type: 'action'
-           });
-           stratSteps.push({
-               text: `<b>STEP 2:</b> Breed that new Female with your other Best Male.`,
-               type: 'action'
-           });
-      } 
-      else if (distinctFemales.length > 1 && distinctMales.length === 0) {
-           stratSteps.push({
-               text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Females.`,
-               type: 'warn'
-           });
-           stratSteps.push({
-               text: `<b>STEP 1:</b> Breed one of them with a clean male to get a <b>MALE</b> copy of her stats.`,
-               type: 'action'
-           });
-      }
-      else if (distinctMales.length >= 1 && distinctFemales.length >= 1) {
-           stratSteps.push({
-               text: `<b>PATH IS CLEAR:</b> You have the stats split between Males and Females. You can combine them directly!`,
-               type: 'good'
-           });
+           stratSteps.push({ text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Males.`, type: 'warn' });
+           stratSteps.push({ text: `<b>STEP 1:</b> Breed <b>${activeHolders[0].name}</b> with ANY clean female until you get a <b>FEMALE</b> baby with his stats.`, type: 'action' });
+           stratSteps.push({ text: `<b>STEP 2:</b> Breed that new Female with your other Best Male.`, type: 'action' });
+      } else if (distinctFemales.length > 1 && distinctMales.length === 0) {
+           stratSteps.push({ text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Females.`, type: 'warn' });
+           stratSteps.push({ text: `<b>STEP 1:</b> Breed one of them with a clean male to get a <b>MALE</b> copy of her stats.`, type: 'action' });
       } else {
-           // One super dino?
-           stratSteps.push({
-               text: `<b>READY FOR MUTATIONS:</b> It looks like one dino holds most of the cards. Pair with Clean partners to hunt for mutations!`,
-               type: 'good'
-           });
+           stratSteps.push({ text: `<b>PATH IS CLEAR:</b> You have valid pairs. Focus on locking in stats!`, type: 'good' });
       }
       
-      stratSteps.forEach((s, i) => {
-          stratHTML += `<div class="strat-step"><span class="step-num">${i+1}</span><span class="step-text">${s.text}</span></div>`;
-      });
+      stratSteps.forEach((s, i) => { stratHTML += `<div class="strat-step"><span class="step-num">${i+1}</span><span class="step-text">${s.text}</span></div>`; });
       stratHTML += `</div>`;
-      stratBoard.innerHTML = stratHTML;
+      if(stratSteps.length > 1) stratBoard.innerHTML = stratHTML; // Only show if strategy needed
 
 
-      // 4. FIND BEST PAIR (Existing Logic)
+      // 4. FIND BEST PAIR (UPDATED LOGIC)
       const males = speciesDinos.filter(d => d.sex === 'Male');
       const females = speciesDinos.filter(d => d.sex === 'Female');
       let bestPair = null;
       let highestScore = -1;
       let maxPossiblePoints = 0.5; 
-      if(priorities.hp) maxPossiblePoints++;
-      if(priorities.stam) maxPossiblePoints++;
-      if(priorities.oxygen) maxPossiblePoints++;
-      if(priorities.food) maxPossiblePoints++;
-      if(priorities.weight) maxPossiblePoints++;
-      if(priorities.melee) maxPossiblePoints++;
+      
+      // Max score is now dynamic: 1.5 per stat if both have it
+      // But for simplicity, we keep the % calculation loosely based on "Perfect Match"
+      if(priorities.hp) maxPossiblePoints += 1.5;
+      if(priorities.stam) maxPossiblePoints += 1.5;
+      if(priorities.oxygen) maxPossiblePoints += 1.5;
+      if(priorities.food) maxPossiblePoints += 1.5;
+      if(priorities.weight) maxPossiblePoints += 1.5;
+      if(priorities.melee) maxPossiblePoints += 1.5;
 
       males.forEach(m => {
           females.forEach(f => {
@@ -725,12 +693,28 @@
               let traits = [];
               if(Number(f.mutations || 0) < 20) score += 0.5;
 
-              if(priorities.hp && (Number(m.hp) >= maxStats.hp || Number(f.hp) >= maxStats.hp)) { score++; traits.push("Max HP"); }
-              if(priorities.stam && (Number(m.stam) >= maxStats.stam || Number(f.stam) >= maxStats.stam)) { score++; traits.push("Max Stam"); }
-              if(priorities.oxygen && (Number(m.oxygen) >= maxStats.oxygen || Number(f.oxygen) >= maxStats.oxygen)) { score++; traits.push("Max Oxy"); }
-              if(priorities.food && (Number(m.food) >= maxStats.food || Number(f.food) >= maxStats.food)) { score++; traits.push("Max Food"); }
-              if(priorities.weight && (Number(m.weight) >= maxStats.weight || Number(f.weight) >= maxStats.weight)) { score++; traits.push("Max Weight"); }
-              if(priorities.melee && (Number(m.melee) >= maxStats.melee || Number(f.melee) >= maxStats.melee)) { score++; traits.push("Max Melee"); }
+              const checkStat = (prio, mVal, fVal, max, name) => {
+                  if(!prio) return 0;
+                  let s = 0;
+                  // If BOTH have it: +1.5 (Guaranteed)
+                  if(Number(mVal) >= max && Number(fVal) >= max) { 
+                      s += 1.5; 
+                      traits.push(`Guaranteed ${name}`); 
+                  }
+                  // If ONE has it: +1.0 (55% Chance)
+                  else if(Number(mVal) >= max || Number(fVal) >= max) { 
+                      s += 1.0; 
+                      traits.push(`Potential ${name}`);
+                  }
+                  return s;
+              };
+
+              score += checkStat(priorities.hp, m.hp, f.hp, maxStats.hp, "HP");
+              score += checkStat(priorities.stam, m.stam, f.stam, maxStats.stam, "Stam");
+              score += checkStat(priorities.oxygen, m.oxygen, f.oxygen, maxStats.oxygen, "Oxy");
+              score += checkStat(priorities.food, m.food, f.food, maxStats.food, "Food");
+              score += checkStat(priorities.weight, m.weight, f.weight, maxStats.weight, "Weight");
+              score += checkStat(priorities.melee, m.melee, f.melee, maxStats.melee, "Melee");
 
               if(score > highestScore) {
                   highestScore = score;
@@ -741,10 +725,12 @@
 
       if(bestPair && highestScore > 0) {
           let pct = Math.round((highestScore / maxPossiblePoints) * 100);
+          if(pct > 100) pct = 100; // Cap visual at 100%
+          
           recEngine.innerHTML = `
             <div class="recommendation-box">
-                <span class="rec-score">★ BEST MATCH: ${highestScore} / ${maxPossiblePoints} (${pct}%)</span>
-                <div style="color:#ccc; font-size:0.9em;">Projected Offspring Potential: ${bestPair.traits.join(" + ")}</div>
+                <span class="rec-score">★ BEST MATCH: ${highestScore} PTS (${pct}%)</span>
+                <div style="color:#ccc; font-size:0.9em;">${bestPair.traits.join(" + ")}</div>
                 <div class="rec-pair">
                     <span class="rec-name" style="color:var(--blue)">${bestPair.male.name}</span>
                     <span style="color:var(--gold)">❤️</span>
@@ -764,6 +750,7 @@
           if(priorities.weight && Number(dino.weight) >= maxStats.weight) accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`;
           if(priorities.oxygen && Number(dino.oxygen) >= maxStats.oxygen) accolades += `<span class="has-top-stat">★ BEST OXY (${dino.oxygen})</span>`;
           if(priorities.food && Number(dino.food) >= maxStats.food) accolades += `<span class="has-top-stat">★ BEST FOOD (${dino.food})</span>`;
+          
           if(accolades === "") return ""; 
           return `<div class="match-card"><strong>${dino.name}</strong> <small>(Muts: ${dino.mutations || 0})</small>${accolades}</div>`;
       };
@@ -777,7 +764,6 @@
       });
   }
 
-  // LISTENERS REMAIN THE SAME
   function isBest(val, max) { if(currentFilter === 'All') return ''; return (Number(val) >= max && max > 0) ? 'best-stat' : ''; }
   function attachListeners() {
       document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', (e) => handleDelete(e.target.dataset.id)));
