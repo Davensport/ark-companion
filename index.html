@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.3.2 (Cleanup)</title>
+    <title>ARK Tribe Companion v1.4.0 (Visuals)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -240,10 +240,27 @@
         .action-btn:hover { border-color: white; color: white; }
         .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
 
+        /* COLOR DNA BAR (NEW) */
+        .color-dna-bar {
+            display: flex;
+            gap: 2px;
+            background: #111;
+            padding: 2px;
+            border-radius: 4px;
+            margin: 5px 0;
+            width: fit-content;
+        }
+        .dna-node {
+            width: 20px;
+            height: 10px;
+            background: #333;
+            border: 1px solid #444;
+            cursor: help;
+        }
+
         /* TABLE STYLES */
         .tek-table-container { overflow-x: auto; }
         .tek-table { width: 100%; border-collapse: collapse; font-size: 0.9em; color: #ccc; }
-        
         .tek-table th { 
             text-align: left; 
             border-bottom: 2px solid var(--tek-blue); 
@@ -256,7 +273,6 @@
         }
         .tek-table th:hover { color: white; background: rgba(0, 242, 255, 0.1); }
         .tek-table th.active-sort { color: var(--gold); border-bottom-color: var(--gold); }
-
         .tek-table td { border-bottom: 1px solid #333; padding: 10px; background: rgba(30, 30, 30, 0.5); }
         .tek-table tr:hover td { background: var(--tek-dim); }
 
@@ -265,9 +281,7 @@
         .best-stat::after { content: " ★"; font-size: 0.8em; }
 
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em; color: #ccc; margin-top: 10px; }
-        
         .badge { font-size: 0.7em; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; background: #333; color: #ccc; vertical-align: middle; margin-right: 5px; }
-        
         .mut-clean { background: rgba(0, 255, 157, 0.2); color: var(--success); border: 1px solid var(--success); }
         .mut-dirty { background: rgba(255, 215, 0, 0.2); color: var(--gold); border: 1px solid var(--gold); }
         .mut-capped { background: rgba(255, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); font-weight: bold; }
@@ -297,7 +311,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.3.2</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.4.0</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -305,7 +319,6 @@
 </div>
 
 <div class="main-content">
-
     <div id="library" class="view-section active">
         <div class="header-controls">
             <div class="filter-bar" id="speciesFilterBar">
@@ -313,7 +326,6 @@
             </div>
             <button class="toggle-view-btn" onclick="toggleView()">☷ GRID / ☰ LIST</button>
         </div>
-        
         <div class="sort-bar" id="gridSortBar">
             <span class="sort-label">SORT CARDS:</span>
             <button class="sort-btn active" onclick="setSort('timestamp')" id="sort-recent">RECENT</button>
@@ -327,13 +339,11 @@
             <button class="sort-btn" onclick="setSort('weight')" id="sort-weight">WGT</button>
             <button class="sort-btn" onclick="setSort('melee')" id="sort-melee">MELEE</button>
         </div>
-
         <div id="dino-feed">Loading Cryopods...</div>
     </div>
 
     <div id="matchmaker" class="view-section">
         <h2 style="text-align:center; color:var(--gold);">GENETIC STRATEGIST</h2>
-        
         <div class="priority-box">
             <div class="priority-label">SCORING PRIORITIES:</div>
             <label><input type="checkbox" class="toggle-check" id="prio-hp" checked onchange="renderMatchmaker()"><span class="toggle-btn">HP</span></label>
@@ -343,24 +353,14 @@
             <label><input type="checkbox" class="toggle-check" id="prio-weight" checked onchange="renderMatchmaker()"><span class="toggle-btn">WEIGHT</span></label>
             <label><input type="checkbox" class="toggle-check" id="prio-melee" checked onchange="renderMatchmaker()"><span class="toggle-btn">MELEE</span></label>
         </div>
-
         <div style="text-align:center; margin-bottom:20px; color:#888;">
             Analyzing: <span id="matchmaker-species" style="color:var(--tek-blue); font-weight:bold; font-size:1.2em;"></span>
         </div>
-        
         <div id="strategy-board"></div>
-        
         <div id="recommendation-engine"></div>
-
         <div class="matchmaker-grid">
-            <div class="gender-col male-col">
-                <h3>BEST MALES ♂</h3>
-                <div id="male-feed"></div>
-            </div>
-            <div class="gender-col female-col">
-                <h3>BEST FEMALES ♀</h3>
-                <div id="female-feed"></div>
-            </div>
+            <div class="gender-col male-col"><h3>BEST MALES ♂</h3><div id="male-feed"></div></div>
+            <div class="gender-col female-col"><h3>BEST FEMALES ♀</h3><div id="female-feed"></div></div>
         </div>
     </div>
 
@@ -389,10 +389,7 @@
                 <input type="text" id="name" placeholder="Name" required>
                 <div style="display:flex; gap:10px;">
                     <input type="number" id="level" placeholder="Total Lvl" required>
-                    <select id="sex">
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
+                    <select id="sex"><option value="Male">Male</option><option value="Female">Female</option></select>
                     <input type="number" id="mutations" placeholder="Muts" style="width:80px;">
                 </div>
                 <label style="color:var(--gold);">Genetics (Points Only)</label>
@@ -411,7 +408,6 @@
             </form>
         </div>
     </div>
-
 </div>
 
 <script type="module">
@@ -419,7 +415,6 @@
   import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, writeBatch, getDocs } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // --- 🔴 PASTE YOUR KEYS HERE 🔴 ---
   const firebaseConfig = {
       apiKey: "AIzaSyCrQjV6u3GhWzVo8QQge9N9mrSY5uabdII",
       authDomain: "ark-tribe-companion.firebaseapp.com",
@@ -431,6 +426,22 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  // --- ARK COLOR DICTIONARY (Truncated for common colors) ---
+  const ARK_COLORS = {
+    1: "#FF0000", 2: "#0000FF", 3: "#00FF00", 4: "#FFFF00", 5: "#00FFFF", 6: "#FF00FF", 7: "#C0FF00", 8: "#FF8000",
+    9: "#C0B0A0", 10: "#C0FFBA", 11: "#C0FFBA", 12: "#FFB0A0", 13: "#FFB0A0", 14: "#000000", 15: "#403020", 16: "#205020",
+    17: "#502020", 18: "#FFFFFF", 19: "#C0C0C0", 20: "#707070", 21: "#ffb400", 22: "#914c00", 23: "#c3e600", 24: "#006400",
+    25: "#32CD32", 26: "#00FF7F", 27: "#008080", 28: "#00C0FF", 29: "#004080", 30: "#800080", 31: "#FFB6C1", 32: "#800000",
+    33: "#A0A0A0", 34: "#696969", 35: "#8B4513", 36: "#A0522D", 37: "#D2691E", 38: "#B8860B", 39: "#556B2F", 40: "#808000",
+    41: "#6B8E23", 42: "#9ACD32", 43: "#2E8B57", 44: "#20B2AA", 45: "#4682B4", 46: "#191970", 47: "#483D8B", 48: "#4B0082",
+    49: "#8A2BE2", 50: "#9400D3", 51: "#9932CC", 52: "#8B008B", 53: "#C71585", 54: "#DB7093", 55: "#FF1493", 56: "#FF69B4",
+    // ... Fallback for others
+  };
+  function getHex(id) {
+      if(!id || id == 0) return "#333";
+      return ARK_COLORS[id] || "#555";
+  }
   
   let currentFilter = 'All';
   let viewMode = 'table'; 
@@ -456,13 +467,9 @@
   window.setSort = function(criteria) {
       if(sortBy === criteria) sortDesc = !sortDesc; 
       else { sortBy = criteria; sortDesc = true; }
-      
       document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
       const activeBtn = document.getElementById('sort-' + (criteria === 'timestamp' ? 'recent' : criteria));
-      if(activeBtn) {
-          activeBtn.classList.add('active');
-          activeBtn.innerText = activeBtn.innerText.split(" ")[0] + (sortDesc ? " ▼" : " ▲");
-      }
+      if(activeBtn) { activeBtn.classList.add('active'); activeBtn.innerText = activeBtn.innerText.split(" ")[0] + (sortDesc ? " ▼" : " ▲"); }
       renderList();
   }
 
@@ -470,25 +477,14 @@
       const feed = document.getElementById("dino-feed");
       const sortBar = document.getElementById("gridSortBar");
       feed.innerHTML = "";
-      
-      if(viewMode === 'cards') sortBar.style.display = "flex";
-      else sortBar.style.display = "none";
+      if(viewMode === 'cards') sortBar.style.display = "flex"; else sortBar.style.display = "none";
       
       let filtered = currentFilter === 'All' ? [...allDinos] : allDinos.filter(d => d.species === currentFilter);
-
       filtered.sort((a, b) => {
-          let valA = a[sortBy];
-          let valB = b[sortBy];
-          if(sortBy !== 'name' && sortBy !== 'species') {
-              valA = Number(valA) || 0;
-              valB = Number(valB) || 0;
-          } else {
-              valA = valA.toLowerCase();
-              valB = valB.toLowerCase();
-          }
-          if (valA < valB) return sortDesc ? 1 : -1;
-          if (valA > valB) return sortDesc ? -1 : 1;
-          return 0;
+          let valA = a[sortBy]; let valB = b[sortBy];
+          if(sortBy !== 'name' && sortBy !== 'species') { valA = Number(valA) || 0; valB = Number(valB) || 0; }
+          else { valA = valA.toLowerCase(); valB = valB.toLowerCase(); }
+          if (valA < valB) return sortDesc ? 1 : -1; if (valA > valB) return sortDesc ? -1 : 1; return 0;
       });
 
       let maxStats = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
@@ -509,6 +505,16 @@
           if(m > 0) return `<span class="badge mut-dirty">M:${m}</span>`;
           return `<span class="badge mut-clean">CLEAN</span>`;
       };
+      
+      const generateColorBar = (colors) => {
+          if(!colors || colors.length === 0) return "";
+          let html = `<div class="color-dna-bar">`;
+          colors.forEach((c, idx) => {
+              html += `<div class="dna-node" style="background:${getHex(c)}" title="Region ${idx}: ID ${c}"></div>`;
+          });
+          html += `</div>`;
+          return html;
+      }
 
       if (viewMode === 'cards') {
           filtered.forEach(dino => {
@@ -528,6 +534,7 @@
                         <span class="badge">${dino.status || 'Standard'}</span>
                         ${getMutBadge(dino.mutations)}
                       </div>
+                      ${generateColorBar(dino.colors)}
                       <div style="font-size:1.1em; margin: 5px 0;">${dino.name} <span style="font-size:0.8em; color:#888;">(Lvl ${dino.level} ${dino.sex})</span></div>
                       <div class="stat-grid">
                           <span class="${isBest(dino.hp, maxStats.hp)}">♥ ${dino.hp}</span>
@@ -558,10 +565,7 @@
                       <td class="${isBest(dino.weight, maxStats.weight)}">${dino.weight || '-'}</td>
                       <td class="${isBest(dino.melee, maxStats.melee)}">${dino.melee}</td>
                       <td>${dino.status || '-'}</td>
-                      <td>
-                          <button class="action-btn edit-btn" data-id="${dino.id}">✎</button>
-                          <button class="action-btn btn-delete" data-id="${dino.id}">✖</button>
-                      </td>
+                      <td><button class="action-btn edit-btn" data-id="${dino.id}">✎</button><button class="action-btn btn-delete" data-id="${dino.id}">✖</button></td>
                   </tr>`;
           });
           feed.innerHTML = `
@@ -590,7 +594,7 @@
       attachListeners();
   }
 
-  // --- LOGIC ENGINE UPDATE (OBSOLETE FILTER) ---
+  // --- LOGIC ENGINE (ALL PREVIOUS UPDATES INCLUDED) ---
   window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
       const stratBoard = document.getElementById("strategy-board");
@@ -612,18 +616,12 @@
       maleFeed.innerHTML = "";
       femaleFeed.innerHTML = "";
 
-      if(currentFilter === 'All') {
-          speciesLabel.innerText = "Please select a species first.";
-          return;
-      }
+      if(currentFilter === 'All') { speciesLabel.innerText = "Please select a species first."; return; }
 
       speciesLabel.innerText = "Analyzing: " + currentFilter;
       const speciesDinos = allDinos.filter(d => d.species === currentFilter);
-      
-      // 1. CALCULATE MAX STATS
       let maxStats = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
       let holders = { hp: [], stam: [], oxygen: [], food: [], weight: [], melee: [] };
-      
       speciesDinos.forEach(d => {
           if(Number(d.hp) > maxStats.hp) maxStats.hp = Number(d.hp);
           if(Number(d.stam) > maxStats.stam) maxStats.stam = Number(d.stam);
@@ -632,8 +630,6 @@
           if(Number(d.weight) > maxStats.weight) maxStats.weight = Number(d.weight);
           if(Number(d.melee) > maxStats.melee) maxStats.melee = Number(d.melee);
       });
-
-      // 2. IDENTIFY STAT HOLDERS
       speciesDinos.forEach(d => {
           if(Number(d.hp) === maxStats.hp) holders.hp.push(d);
           if(Number(d.stam) === maxStats.stam) holders.stam.push(d);
@@ -643,7 +639,6 @@
           if(Number(d.melee) === maxStats.melee) holders.melee.push(d);
       });
 
-      // 3. GENERATE STRATEGY (ALWAYS SHOW)
       let stratHTML = `<div class="strategy-container"><div class="strat-header">⚠️ BREEDING PLAN</div>`;
       let stratSteps = [];
       let activeHolders = [];
@@ -665,19 +660,15 @@
       } else {
            stratSteps.push({ text: `<b>PATH IS CLEAR:</b> Valid Male/Female pairs detected. Focus on locking in stats!`, type: 'good' });
       }
-      
       stratSteps.forEach((s, i) => { stratHTML += `<div class="strat-step"><span class="step-num">${i+1}</span><span class="step-text">${s.text}</span></div>`; });
       stratHTML += `</div>`;
-      stratBoard.innerHTML = stratHTML; // ALWAYS RENDER
+      stratBoard.innerHTML = stratHTML;
 
-
-      // 4. FIND BEST PAIR
       const males = speciesDinos.filter(d => d.sex === 'Male');
       const females = speciesDinos.filter(d => d.sex === 'Female');
       let bestPair = null;
       let highestScore = -1;
       let maxPossiblePoints = 0.5; 
-      
       if(priorities.hp) maxPossiblePoints += 1.5;
       if(priorities.stam) maxPossiblePoints += 1.5;
       if(priorities.oxygen) maxPossiblePoints += 1.5;
@@ -687,41 +678,27 @@
 
       males.forEach(m => {
           females.forEach(f => {
-              let score = 0;
-              let traits = [];
+              let score = 0; let traits = [];
               if(Number(f.mutations || 0) < 20) score += 0.5;
-
               const checkStat = (prio, mVal, fVal, max, name) => {
                   if(!prio) return 0;
-                  if(Number(mVal) >= max && Number(fVal) >= max) { 
-                      traits.push(`Guaranteed ${name}`); 
-                      return 1.5; 
-                  }
-                  else if(Number(mVal) >= max || Number(fVal) >= max) { 
-                      traits.push(`Potential ${name}`);
-                      return 1.0; 
-                  }
+                  if(Number(mVal) >= max && Number(fVal) >= max) { traits.push(`Guaranteed ${name}`); return 1.5; }
+                  else if(Number(mVal) >= max || Number(fVal) >= max) { traits.push(`Potential ${name}`); return 1.0; }
                   return 0;
               };
-
               score += checkStat(priorities.hp, m.hp, f.hp, maxStats.hp, "HP");
               score += checkStat(priorities.stam, m.stam, f.stam, maxStats.stam, "Stam");
               score += checkStat(priorities.oxygen, m.oxygen, f.oxygen, maxStats.oxygen, "Oxy");
               score += checkStat(priorities.food, m.food, f.food, maxStats.food, "Food");
               score += checkStat(priorities.weight, m.weight, f.weight, maxStats.weight, "Weight");
               score += checkStat(priorities.melee, m.melee, f.melee, maxStats.melee, "Melee");
-
-              if(score > highestScore) {
-                  highestScore = score;
-                  bestPair = { male: m, female: f, traits: traits };
-              }
+              if(score > highestScore) { highestScore = score; bestPair = { male: m, female: f, traits: traits }; }
           });
       });
 
       if(bestPair && highestScore > 0) {
           let pct = Math.round((highestScore / maxPossiblePoints) * 100);
           if(pct > 100) pct = 100;
-          
           recEngine.innerHTML = `
             <div class="recommendation-box">
                 <span class="rec-score">★ BEST MATCH: ${highestScore} PTS (${pct}%)</span>
@@ -731,86 +708,43 @@
                     <span style="color:var(--gold)">❤️</span>
                     <span class="rec-name" style="color:var(--pink)">${bestPair.female.name}</span>
                 </div>
-            </div>
-          `;
-      } else {
-          recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found.</div>`;
-      }
+            </div>`;
+      } else { recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found.</div>`; }
 
-      // 5. RENDER CARDS (WITH DOMINATION FILTER)
-      const isDominated = (dino, list) => {
-           // Skip filter if dirty/clean logic applies (don't hide clean dinos)
-           if(Number(dino.mutations || 0) < 20) return false; 
-
-           return list.some(other => {
-                if(other.id === dino.id) return false;
-                // If other is basically same or better in all relevant stats
-                let betterOrEqual = true;
-                if(priorities.hp && Number(other.hp) < Number(dino.hp)) betterOrEqual = false;
-                if(priorities.melee && Number(other.melee) < Number(dino.melee)) betterOrEqual = false;
-                if(priorities.stam && Number(other.stam) < Number(dino.stam)) betterOrEqual = false;
-                if(priorities.weight && Number(other.weight) < Number(dino.weight)) betterOrEqual = false;
-                // Add more logic here if strict domination is needed
-                return betterOrEqual;
-           });
-      };
-
-      // Helper to generate HTML
       const createMatchCard = (dino) => {
-          let accolades = "";
-          let score = 0;
+          let accolades = ""; let score = 0;
           if(priorities.hp && Number(dino.hp) >= maxStats.hp) { accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`; score++; }
           if(priorities.melee && Number(dino.melee) >= maxStats.melee) { accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`; score++; }
           if(priorities.stam && Number(dino.stam) >= maxStats.stam) { accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`; score++; }
           if(priorities.weight && Number(dino.weight) >= maxStats.weight) { accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`; score++; }
           if(priorities.oxygen && Number(dino.oxygen) >= maxStats.oxygen) { accolades += `<span class="has-top-stat">★ BEST OXY (${dino.oxygen})</span>`; score++; }
           if(priorities.food && Number(dino.food) >= maxStats.food) { accolades += `<span class="has-top-stat">★ BEST FOOD (${dino.food})</span>`; score++; }
-          
           if(accolades === "") return null; 
           return { html: `<div class="match-card"><strong>${dino.name}</strong> <small>(Muts: ${dino.mutations || 0})</small>${accolades}</div>`, score: score, dino: dino };
       };
 
-      // Process Lists
-      let maleCards = [];
-      let femaleCards = [];
-
+      let maleCards = []; let femaleCards = [];
       speciesDinos.forEach(dino => {
           const cardObj = createMatchCard(dino);
-          if(cardObj) {
-              if(dino.sex === 'Male') maleCards.push(cardObj);
-              else femaleCards.push(cardObj);
-          }
+          if(cardObj) { if(dino.sex === 'Male') maleCards.push(cardObj); else femaleCards.push(cardObj); }
       });
-
-      // Simple filter: If someone else has strictly MORE best stats, hide the weak ones.
-      // E.g., F2 has (HP, Melee). F1 has (Melee). F2 > F1.
       const filterList = (list) => {
           return list.filter(item => {
-              // Keep item if NO ONE ELSE is strictly better
               return !list.some(other => {
                  if(other.dino.id === item.dino.id) return false;
-                 // Does 'other' have ALL of 'item's accolades plus more?
-                 // Simple proxy: If 'other' score > 'item' score, and 'item' has no unique max stats...
-                 // Let's use specific stats check
                  let dominated = true;
                  if(priorities.hp && Number(item.dino.hp) >= maxStats.hp && Number(other.dino.hp) < maxStats.hp) dominated = false;
                  if(priorities.melee && Number(item.dino.melee) >= maxStats.melee && Number(other.dino.melee) < maxStats.melee) dominated = false;
                  if(priorities.stam && Number(item.dino.stam) >= maxStats.stam && Number(other.dino.stam) < maxStats.stam) dominated = false;
-                 // ... (Checks for unique value)
-                 
-                 // If item has FEWER accolades than other, and doesn't have anything unique, hide it.
                  if(item.score < other.score && dominated) return true;
                  return false;
               });
           });
       };
-
-      // RENDER FILTERED LISTS
       filterList(maleCards).forEach(c => maleFeed.innerHTML += c.html);
       filterList(femaleCards).forEach(c => femaleFeed.innerHTML += c.html);
   }
 
-  // LISTENERS REMAIN THE SAME
   function isBest(val, max) { if(currentFilter === 'All') return ''; return (Number(val) >= max && max > 0) ? 'best-stat' : ''; }
   function attachListeners() {
       document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', (e) => handleDelete(e.target.dataset.id)));
@@ -899,6 +833,5 @@
       if(tabId === 'add') document.querySelector('.nav-btn:nth-child(4)').classList.add('active');
   }
 </script>
-
 </body>
 </html>
