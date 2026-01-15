@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.1.0 (Mutations)</title>
+    <title>ARK Tribe Companion v1.2.0 (Priorities)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -147,6 +147,36 @@
             font-weight: bold;
         }
 
+        /* PRIORITY TOGGLES (NEW) */
+        .priority-box {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .priority-label { font-size: 0.9em; color: #aaa; margin-right: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .toggle-check { display: none; } /* Hide default checkbox */
+        .toggle-btn {
+            display: inline-block;
+            padding: 5px 15px;
+            margin: 0 5px;
+            border: 1px solid #555;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+            color: #777;
+            transition: 0.2s;
+        }
+        .toggle-check:checked + .toggle-btn {
+            background: var(--tek-dim);
+            color: var(--tek-blue);
+            border-color: var(--tek-blue);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+        }
+
+
         /* FORMS */
         input, select {
             background: #000;
@@ -251,7 +281,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.1.0</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.2.0</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -274,7 +304,8 @@
             <button class="sort-btn active" onclick="setSort('timestamp')" id="sort-recent">RECENT</button>
             <button class="sort-btn" onclick="setSort('name')" id="sort-name">NAME</button>
             <button class="sort-btn" onclick="setSort('level')" id="sort-level">LEVEL</button>
-            <button class="sort-btn" onclick="setSort('mutations')" id="sort-mutations">MUTS</button> <button class="sort-btn" onclick="setSort('hp')" id="sort-hp">HP</button>
+            <button class="sort-btn" onclick="setSort('mutations')" id="sort-mutations">MUTS</button>
+            <button class="sort-btn" onclick="setSort('hp')" id="sort-hp">HP</button>
             <button class="sort-btn" onclick="setSort('stam')" id="sort-stam">STAM</button>
             <button class="sort-btn" onclick="setSort('oxygen')" id="sort-oxygen">OXY</button>
             <button class="sort-btn" onclick="setSort('food')" id="sort-food">FOOD</button>
@@ -287,9 +318,33 @@
 
     <div id="matchmaker" class="view-section">
         <h2 style="text-align:center; color:var(--gold);">GENETIC ADVISOR</h2>
+        
+        <div class="priority-box">
+            <span class="priority-label">SCORING PRIORITIES:</span>
+            
+            <label>
+                <input type="checkbox" class="toggle-check" id="prio-hp" checked onchange="renderMatchmaker()">
+                <span class="toggle-btn">HP</span>
+            </label>
+            
+            <label>
+                <input type="checkbox" class="toggle-check" id="prio-stam" checked onchange="renderMatchmaker()">
+                <span class="toggle-btn">STAM</span>
+            </label>
+
+            <label>
+                <input type="checkbox" class="toggle-check" id="prio-weight" checked onchange="renderMatchmaker()">
+                <span class="toggle-btn">WEIGHT</span>
+            </label>
+
+            <label>
+                <input type="checkbox" class="toggle-check" id="prio-melee" checked onchange="renderMatchmaker()">
+                <span class="toggle-btn">MELEE</span>
+            </label>
+        </div>
+
         <div style="text-align:center; margin-bottom:20px; color:#888;">
-            Select a species in the Library tab first to see advice.
-            <br><span id="matchmaker-species" style="color:var(--tek-blue); font-weight:bold; font-size:1.2em;"></span>
+            Analyzing: <span id="matchmaker-species" style="color:var(--tek-blue); font-weight:bold; font-size:1.2em;"></span>
         </div>
         
         <div id="recommendation-engine"></div>
@@ -466,7 +521,6 @@
           });
       }
 
-      // HELPER: Get Mutation Badge
       const getMutBadge = (m) => {
           m = Number(m) || 0;
           if(m >= 20) return `<span class="badge mut-capped">M:${m}</span>`;
@@ -556,12 +610,18 @@
       attachListeners();
   }
 
-  // 3. MATCHMAKER
-  function renderMatchmaker() {
+  // 3. MATCHMAKER (UPDATED FOR PRIORITIES)
+  window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
       const maleFeed = document.getElementById("male-feed");
       const femaleFeed = document.getElementById("female-feed");
       const speciesLabel = document.getElementById("matchmaker-species");
+      
+      // CHECK PRIORITIES
+      const useHP = document.getElementById("prio-hp").checked;
+      const useStam = document.getElementById("prio-stam").checked;
+      const useWeight = document.getElementById("prio-weight").checked;
+      const useMelee = document.getElementById("prio-melee").checked;
 
       recEngine.innerHTML = "";
       maleFeed.innerHTML = "";
@@ -595,10 +655,11 @@
               // PREFER CLEAN FEMALES (Logic: Muts < 20)
               if(Number(f.mutations || 0) < 20) score += 0.5;
 
-              if(Number(m.hp) >= maxStats.hp || Number(f.hp) >= maxStats.hp) { score++; traits.push("Max HP"); }
-              if(Number(m.stam) >= maxStats.stam || Number(f.stam) >= maxStats.stam) { score++; traits.push("Max Stam"); }
-              if(Number(m.weight) >= maxStats.weight || Number(f.weight) >= maxStats.weight) { score++; traits.push("Max Weight"); }
-              if(Number(m.melee) >= maxStats.melee || Number(f.melee) >= maxStats.melee) { score++; traits.push("Max Melee"); }
+              // DYNAMIC SCORING BASED ON TOGGLES
+              if(useHP && (Number(m.hp) >= maxStats.hp || Number(f.hp) >= maxStats.hp)) { score++; traits.push("Max HP"); }
+              if(useStam && (Number(m.stam) >= maxStats.stam || Number(f.stam) >= maxStats.stam)) { score++; traits.push("Max Stam"); }
+              if(useWeight && (Number(m.weight) >= maxStats.weight || Number(f.weight) >= maxStats.weight)) { score++; traits.push("Max Weight"); }
+              if(useMelee && (Number(m.melee) >= maxStats.melee || Number(f.melee) >= maxStats.melee)) { score++; traits.push("Max Melee"); }
 
               if(score > highestScore) {
                   highestScore = score;
@@ -620,15 +681,17 @@
             </div>
           `;
       } else {
-          recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found for this species.</div>`;
+          recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found for your selected priorities.</div>`;
       }
 
       const createMatchCard = (dino) => {
           let accolades = "";
-          if(Number(dino.hp) >= maxStats.hp) accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`;
-          if(Number(dino.melee) >= maxStats.melee) accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`;
-          if(Number(dino.stam) >= maxStats.stam) accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`;
-          if(Number(dino.weight) >= maxStats.weight) accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`;
+          // Only show accolades if priority is checked
+          if(useHP && Number(dino.hp) >= maxStats.hp) accolades += `<span class="has-top-stat">★ BEST HP (${dino.hp})</span>`;
+          if(useMelee && Number(dino.melee) >= maxStats.melee) accolades += `<span class="has-top-stat">★ BEST MELEE (${dino.melee})</span>`;
+          if(useStam && Number(dino.stam) >= maxStats.stam) accolades += `<span class="has-top-stat">★ BEST STAM (${dino.stam})</span>`;
+          if(useWeight && Number(dino.weight) >= maxStats.weight) accolades += `<span class="has-top-stat">★ BEST WEIGHT (${dino.weight})</span>`;
+          
           if(accolades === "") return ""; 
 
           return `
