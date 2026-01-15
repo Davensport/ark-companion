@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.5.0 (Calculator)</title>
+    <title>ARK Tribe Companion v1.4.0 (Visuals)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -194,7 +194,7 @@
         .step-num { background: var(--purple); color: white; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; }
         .step-text { color: #ddd; font-size: 0.9em; line-height: 1.4em;}
 
-        /* FORMS & CALCULATOR */
+        /* FORMS */
         input, select {
             background: #000;
             border: 1px solid var(--tek-blue);
@@ -205,30 +205,6 @@
             box-sizing: border-box;
             font-family: 'Orbitron', sans-serif;
         }
-        .calc-input-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            background: rgba(0,0,0,0.5);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #333;
-        }
-        .calc-result-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-        }
-        .calc-card {
-            background: rgba(30,30,30,0.9);
-            border: 1px solid #444;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px;
-        }
-        .calc-card.highlight { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        .calc-val { font-size: 2em; font-weight: bold; color: white; display: block; margin: 10px 0; }
-        .calc-label { color: #888; font-size: 0.9em; text-transform: uppercase; }
 
         /* CARD STYLES */
         .tek-card {
@@ -264,7 +240,7 @@
         .action-btn:hover { border-color: white; color: white; }
         .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
 
-        /* COLOR DNA BAR */
+        /* COLOR DNA BAR (NEW) */
         .color-dna-bar {
             display: flex;
             gap: 2px;
@@ -281,6 +257,24 @@
             border: 1px solid #444;
             cursor: help;
         }
+
+        /* TABLE STYLES */
+        .tek-table-container { overflow-x: auto; }
+        .tek-table { width: 100%; border-collapse: collapse; font-size: 0.9em; color: #ccc; }
+        .tek-table th { 
+            text-align: left; 
+            border-bottom: 2px solid var(--tek-blue); 
+            padding: 10px; 
+            color: var(--tek-blue);
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .tek-table th:hover { color: white; background: rgba(0, 242, 255, 0.1); }
+        .tek-table th.active-sort { color: var(--gold); border-bottom-color: var(--gold); }
+        .tek-table td { border-bottom: 1px solid #333; padding: 10px; background: rgba(30, 30, 30, 0.5); }
+        .tek-table tr:hover td { background: var(--tek-dim); }
 
         /* HIGHLIGHTS & BADGES */
         .best-stat { color: var(--gold); font-weight: bold; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
@@ -317,10 +311,9 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.5.0</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.4.0</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
-    <button class="nav-btn" onclick="switchTab('calculator')">🧮 TAMING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
     <button class="nav-btn btn-nuke" onclick="handleDeleteAll()">⚠ DELETE LIBRARY</button>
 </div>
@@ -341,6 +334,9 @@
             <button class="sort-btn" onclick="setSort('mutations')" id="sort-mutations">MUTS</button>
             <button class="sort-btn" onclick="setSort('hp')" id="sort-hp">HP</button>
             <button class="sort-btn" onclick="setSort('stam')" id="sort-stam">STAM</button>
+            <button class="sort-btn" onclick="setSort('oxygen')" id="sort-oxygen">OXY</button>
+            <button class="sort-btn" onclick="setSort('food')" id="sort-food">FOOD</button>
+            <button class="sort-btn" onclick="setSort('weight')" id="sort-weight">WGT</button>
             <button class="sort-btn" onclick="setSort('melee')" id="sort-melee">MELEE</button>
         </div>
         <div id="dino-feed">Loading Cryopods...</div>
@@ -366,30 +362,6 @@
             <div class="gender-col male-col"><h3>BEST MALES ♂</h3><div id="male-feed"></div></div>
             <div class="gender-col female-col"><h3>BEST FEMALES ♀</h3><div id="female-feed"></div></div>
         </div>
-    </div>
-
-    <div id="calculator" class="view-section">
-        <h2 style="text-align:center; color:var(--success);">INTERACTIVE TAMING CALC</h2>
-        
-        <div class="calc-input-row">
-            <div style="flex:1;">
-                <label>Creature</label>
-                <select id="calc-species" onchange="calculateTame()">
-                    <option value="Rex">Rex</option>
-                    <option value="Yutyrannus">Yutyrannus</option>
-                    <option value="Thylacoleo">Thylacoleo</option>
-                    <option value="Argentavis">Argentavis</option>
-                    <option value="Baryonyx">Baryonyx</option>
-                </select>
-            </div>
-            <div style="flex:1;">
-                <label>Wild Level</label>
-                <input type="number" id="calc-level" value="150" oninput="calculateTame()">
-            </div>
-        </div>
-
-        <div id="calc-results" class="calc-result-box">
-            </div>
     </div>
 
     <div id="add" class="view-section">
@@ -455,55 +427,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- GOONER DATABASE (Level 150 Reference Values) ---
-  const TAME_DB = {
-      "Rex": { kibbleType: "Exceptional", k150: 17, meatType: "Raw Mutton", m150: 35, narc150: 0 },
-      "Yutyrannus": { kibbleType: "Extraordinary", k150: 20, meatType: "Raw Mutton", m150: 41, narc150: 0 },
-      "Thylacoleo": { kibbleType: "Extraordinary", k150: 8, meatType: "Cooked Lamb Chop", m150: 60, narc150: 40 }, // Note: Cooked is better
-      "Argentavis": { kibbleType: "Superior", k150: 9, meatType: "Raw Mutton", m150: 21, narc150: 0 },
-      "Baryonyx": { kibbleType: "Regular", k150: 16, meatType: "Raw Prime Fish", m150: 37, narc150: 0 },
-  };
-
-  window.calculateTame = function() {
-      const species = document.getElementById("calc-species").value;
-      const level = parseInt(document.getElementById("calc-level").value) || 1;
-      const data = TAME_DB[species];
-      const container = document.getElementById("calc-results");
-
-      if(!data) {
-          container.innerHTML = "No data for this species yet.";
-          return;
-      }
-
-      // LINEAR SCALING LOGIC
-      // If 150 needs 17, 75 needs 8.5 (Round Up)
-      const ratio = level / 150;
-      
-      const kibbleNeeded = Math.ceil(data.k150 * ratio);
-      const meatNeeded = Math.ceil(data.m150 * ratio);
-      // Narcotics usually scale with Torpor, which scales with level.
-      // Simplistic safety logic: If 150 needs 0, assume 0. If >0, scale it.
-      const narcNeeded = Math.ceil(data.narc150 * ratio);
-
-      container.innerHTML = `
-          <div class="calc-card highlight">
-              <span class="calc-label">${data.kibbleType} Kibble</span>
-              <span class="calc-val">${kibbleNeeded}</span>
-              <small style="color:#888;">Recommmended</small>
-          </div>
-          <div class="calc-card">
-              <span class="calc-label">${data.meatType}</span>
-              <span class="calc-val">${meatNeeded}</span>
-              <small style="color:#888;">Alternative</small>
-          </div>
-          <div class="calc-card" style="border-color:${narcNeeded > 0 ? '#bf00ff' : '#444'}">
-              <span class="calc-label">Narcotics</span>
-              <span class="calc-val">${narcNeeded}</span>
-              <small style="color:#888;">${narcNeeded > 0 ? 'Required' : 'Not Needed'}</small>
-          </div>
-      `;
-  }
-
   // --- ARK COLOR DICTIONARY ---
   const ARK_COLORS = {
     1: "#FF0000", 2: "#0000FF", 3: "#00FF00", 4: "#FFFF00", 5: "#00FFFF", 6: "#FF00FF", 7: "#C0FF00", 8: "#FF8000",
@@ -535,8 +458,6 @@
       renderFilters(Array.from(speciesSet));
       renderList();
       renderMatchmaker(); 
-      // Initialize Calc
-      calculateTame();
   });
 
   window.setSort = function(criteria) {
@@ -906,8 +827,7 @@
       document.getElementById(tabId).classList.add('active');
       if(tabId === 'library') document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
       if(tabId === 'matchmaker') { document.querySelector('.nav-btn:nth-child(3)').classList.add('active'); renderMatchmaker(); }
-      if(tabId === 'calculator') { document.querySelector('.nav-btn:nth-child(4)').classList.add('active'); calculateTame(); }
-      if(tabId === 'add') document.querySelector('.nav-btn:nth-child(5)').classList.add('active');
+      if(tabId === 'add') document.querySelector('.nav-btn:nth-child(4)').classList.add('active');
   }
 </script>
 </body>
