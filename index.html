@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.5.0 (Target Lock)</title>
+    <title>ARK Tribe Companion v1.5.1 (Smart Logic)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -191,7 +191,7 @@
         }
         .strat-header { color: var(--purple); font-weight: bold; font-size: 1.1em; border-bottom: 1px solid var(--purple); padding-bottom: 10px; margin-bottom: 10px;}
         .strat-step { margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; }
-        .step-num { background: var(--purple); color: white; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; }
+        .step-num { background: var(--purple); color: white; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; min-width: 15px; text-align: center;}
         .step-text { color: #ddd; font-size: 0.9em; line-height: 1.4em;}
 
         /* TARGET GOAL BOX */
@@ -204,8 +204,10 @@
             display: flex;
             align-items: center;
             justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .target-label { color: var(--gold); font-weight: bold; font-size: 0.9em; margin-right: 10px; text-transform: uppercase; }
+        .target-label { color: var(--gold); font-weight: bold; font-size: 0.9em; text-transform: uppercase; }
         .target-stat { background: #222; padding: 5px 10px; border-radius: 3px; border: 1px solid #444; color: white; font-size: 1.1em; font-weight: bold; }
         .target-stat span { font-size: 0.7em; color: #888; margin-left: 5px; }
 
@@ -326,7 +328,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.5.0</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.5.1</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -605,7 +607,7 @@
       attachListeners();
   }
 
-  // --- LOGIC ENGINE UPDATE (v1.5.0: Target Lock) ---
+  // --- LOGIC ENGINE UPDATE (v1.5.1: POPULATION CHECK) ---
   window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
       const stratBoard = document.getElementById("strategy-board");
@@ -631,6 +633,11 @@
 
       speciesLabel.innerText = "Analyzing: " + currentFilter;
       const speciesDinos = allDinos.filter(d => d.species === currentFilter);
+      
+      // POPULATION CENSUS
+      const totalMales = speciesDinos.filter(d => d.sex === 'Male');
+      const totalFemales = speciesDinos.filter(d => d.sex === 'Female');
+
       let maxStats = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
       let holders = { hp: [], stam: [], oxygen: [], food: [], weight: [], melee: [] };
       speciesDinos.forEach(d => {
@@ -650,10 +657,9 @@
           if(Number(d.melee) === maxStats.melee) holders.melee.push(d);
       });
 
-      // --- STRATEGY & TARGET LOCK ---
+      // --- STRATEGY, TARGET LOCK & POPULATION CHECK ---
       let stratHTML = `<div class="strategy-container"><div class="strat-header">⚠️ BREEDING PLAN</div>`;
       let stratSteps = [];
-      let activeHolders = [];
       let targetGoalHTML = `<div class="target-goal-box"><div class="target-label">🎯 Target Baby:</div>`;
       
       // Build Target Goal Box
@@ -665,27 +671,39 @@
       if(priorities.food) targetGoalHTML += `<div class="target-stat">${maxStats.food} <span>FOOD</span></div>`;
       targetGoalHTML += `</div>`;
 
-      if(priorities.hp) activeHolders.push(...holders.hp);
-      if(priorities.stam) activeHolders.push(...holders.stam);
-      if(priorities.melee) activeHolders.push(...holders.melee);
-      if(priorities.weight) activeHolders.push(...holders.weight);
-
-      const distinctMales = [...new Set(activeHolders.filter(d => d.sex === 'Male').map(d => d.id))];
-      const distinctFemales = [...new Set(activeHolders.filter(d => d.sex === 'Female').map(d => d.id))];
-
-      if (distinctMales.length > 1 && distinctFemales.length === 0) {
-           stratSteps.push({ text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Males.`, type: 'warn' });
-           stratSteps.push({ text: `<b>STEP 1:</b> Breed <b>${activeHolders[0].name}</b> with ANY clean female to create a female heir.`, type: 'action' });
-           stratSteps.push({ text: `<b>STEP 2:</b> Breed that new Female with your other Best Male.`, type: 'action' });
-      } else if (distinctFemales.length > 1 && distinctMales.length === 0) {
-           stratSteps.push({ text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Females.`, type: 'warn' });
-           stratSteps.push({ text: `<b>STEP 1:</b> Breed one with a clean male to get a Male heir.`, type: 'action' });
+      // LOGIC CHECKS
+      if (totalMales.length === 0 && totalFemales.length === 0) {
+          stratSteps.push({ text: `<b>EMPTY LIBRARY:</b> You need to add dinos first.`, type: 'warn' });
+      } else if (totalMales.length === 0) {
+          stratSteps.push({ text: `<b>NO MALES DETECTED:</b> You have ${totalFemales.length} Females but 0 Males.`, type: 'warn' });
+          stratSteps.push({ text: `<b>ACTION:</b> Go tame or trade for a Male. Stats don't matter if you just need a mate.`, type: 'action' });
+      } else if (totalFemales.length === 0) {
+          stratSteps.push({ text: `<b>NO FEMALES DETECTED:</b> You have ${totalMales.length} Males but 0 Females.`, type: 'warn' });
+          stratSteps.push({ text: `<b>ACTION:</b> Go tame or trade for a Female immediately.`, type: 'action' });
       } else {
-           stratSteps.push({ text: `<b>PATH IS CLEAR:</b> Valid Male/Female pairs detected. Focus on acquiring ALL stats.`, type: 'good' });
+          // If we have both sexes, THEN check for stat conflicts
+          let activeHolders = [];
+          if(priorities.hp) activeHolders.push(...holders.hp);
+          if(priorities.stam) activeHolders.push(...holders.stam);
+          if(priorities.melee) activeHolders.push(...holders.melee);
+          if(priorities.weight) activeHolders.push(...holders.weight);
+
+          const distinctMales = [...new Set(activeHolders.filter(d => d.sex === 'Male').map(d => d.id))];
+          const distinctFemales = [...new Set(activeHolders.filter(d => d.sex === 'Female').map(d => d.id))];
+
+          if (distinctMales.length > 1 && distinctFemales.length === 0) {
+               stratSteps.push({ text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Males.`, type: 'warn' });
+               stratSteps.push({ text: `<b>STEP 1:</b> Breed <b>${activeHolders[0].name}</b> with ANY clean female to create a female heir.`, type: 'action' });
+               stratSteps.push({ text: `<b>STEP 2:</b> Breed that new Female with your other Best Male.`, type: 'action' });
+          } else if (distinctFemales.length > 1 && distinctMales.length === 0) {
+               stratSteps.push({ text: `<b>GENDER CONFLICT:</b> Your best stats are stuck on multiple Females.`, type: 'warn' });
+               stratSteps.push({ text: `<b>STEP 1:</b> Breed one with a clean male to get a Male heir.`, type: 'action' });
+          } else {
+               stratSteps.push({ text: `<b>PATH IS CLEAR:</b> Valid Male/Female pairs detected. Focus on acquiring ALL stats.`, type: 'good' });
+          }
       }
+
       stratSteps.forEach((s, i) => { stratHTML += `<div class="strat-step"><span class="step-num">${i+1}</span><span class="step-text">${s.text}</span></div>`; });
-      
-      // Add Target Box to Strategy
       stratHTML += targetGoalHTML;
       stratHTML += `</div>`;
       stratBoard.innerHTML = stratHTML;
@@ -741,7 +759,13 @@
                     <span class="rec-name" style="color:var(--pink)">${bestPair.female.name}</span>
                 </div>
             </div>`;
-      } else { recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found.</div>`; }
+      } else { 
+          // If populations exist but no match (rare), show default. 
+          // If population missing, recEngine is empty (which is fine, the Strat Board explains why)
+          if(totalMales.length > 0 && totalFemales.length > 0) {
+             recEngine.innerHTML = `<div style="text-align:center; color:#666; padding:20px; border:1px solid #333;">No viable breeding pairs found.</div>`; 
+          }
+      }
 
       const createMatchCard = (dino) => {
           let accolades = ""; let score = 0;
