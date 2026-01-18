@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.4.1 (Logic Fix)</title>
+    <title>ARK Tribe Companion v1.5.0 (Target Lock)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -194,6 +194,21 @@
         .step-num { background: var(--purple); color: white; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; }
         .step-text { color: #ddd; font-size: 0.9em; line-height: 1.4em;}
 
+        /* TARGET GOAL BOX */
+        .target-goal-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--gold);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .target-label { color: var(--gold); font-weight: bold; font-size: 0.9em; margin-right: 10px; text-transform: uppercase; }
+        .target-stat { background: #222; padding: 5px 10px; border-radius: 3px; border: 1px solid #444; color: white; font-size: 1.1em; font-weight: bold; }
+        .target-stat span { font-size: 0.7em; color: #888; margin-left: 5px; }
+
         /* FORMS */
         input, select {
             background: #000;
@@ -311,7 +326,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.4.1</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.5.0</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="resetForm(); switchTab('add')">➕ ADD DATA</button>
@@ -590,7 +605,7 @@
       attachListeners();
   }
 
-  // --- LOGIC ENGINE UPDATE (v1.4.1 AGGRESSIVE MATH) ---
+  // --- LOGIC ENGINE UPDATE (v1.5.0: Target Lock) ---
   window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
       const stratBoard = document.getElementById("strategy-board");
@@ -635,10 +650,21 @@
           if(Number(d.melee) === maxStats.melee) holders.melee.push(d);
       });
 
-      // Strategy
+      // --- STRATEGY & TARGET LOCK ---
       let stratHTML = `<div class="strategy-container"><div class="strat-header">⚠️ BREEDING PLAN</div>`;
       let stratSteps = [];
       let activeHolders = [];
+      let targetGoalHTML = `<div class="target-goal-box"><div class="target-label">🎯 Target Baby:</div>`;
+      
+      // Build Target Goal Box
+      if(priorities.hp) targetGoalHTML += `<div class="target-stat">${maxStats.hp} <span>HP</span></div>`;
+      if(priorities.stam) targetGoalHTML += `<div class="target-stat">${maxStats.stam} <span>STAM</span></div>`;
+      if(priorities.melee) targetGoalHTML += `<div class="target-stat">${maxStats.melee} <span>MEL</span></div>`;
+      if(priorities.weight) targetGoalHTML += `<div class="target-stat">${maxStats.weight} <span>WGT</span></div>`;
+      if(priorities.oxygen) targetGoalHTML += `<div class="target-stat">${maxStats.oxygen} <span>OXY</span></div>`;
+      if(priorities.food) targetGoalHTML += `<div class="target-stat">${maxStats.food} <span>FOOD</span></div>`;
+      targetGoalHTML += `</div>`;
+
       if(priorities.hp) activeHolders.push(...holders.hp);
       if(priorities.stam) activeHolders.push(...holders.stam);
       if(priorities.melee) activeHolders.push(...holders.melee);
@@ -658,6 +684,9 @@
            stratSteps.push({ text: `<b>PATH IS CLEAR:</b> Valid Male/Female pairs detected. Focus on acquiring ALL stats.`, type: 'good' });
       }
       stratSteps.forEach((s, i) => { stratHTML += `<div class="strat-step"><span class="step-num">${i+1}</span><span class="step-text">${s.text}</span></div>`; });
+      
+      // Add Target Box to Strategy
+      stratHTML += targetGoalHTML;
       stratHTML += `</div>`;
       stratBoard.innerHTML = stratHTML;
 
@@ -667,7 +696,6 @@
       let bestPair = null;
       let highestScore = -1;
       
-      // Calculate Max Possible Score (assuming 3 stats -> 3.0)
       let maxPossiblePoints = 0.5; // Base
       if(priorities.hp) maxPossiblePoints += 1.0;
       if(priorities.stam) maxPossiblePoints += 1.0;
@@ -681,8 +709,7 @@
               let score = 0; let traits = [];
               if(Number(f.mutations || 0) < 20) score += 0.5;
 
-              // NEW MATH: Guaranteed = 1.15, Potential = 1.0
-              // This makes 3 Potentials (3.0) > 2 Guarantees (2.3)
+              // Aggressive Math (3 Potentials > 2 Guarantees)
               const checkStat = (prio, mVal, fVal, max, name) => {
                   if(!prio) return 0;
                   if(Number(mVal) >= max && Number(fVal) >= max) { traits.push(`Guaranteed ${name}`); return 1.15; }
@@ -803,7 +830,7 @@
   });
   async function handleDelete(id) { if(confirm("Delete this entry?")) await deleteDoc(doc(db, "dinos", id)); }
   window.handleDeleteAll = async function() {
-      if(!confirm("⚠️ DANGER ZONE⚠️\n\nThis will delete EVERY dinosaur in the library.\n\nAre you sure?")) return;
+      if(!confirm("⚠️ DANGER ZONE ⚠️\n\nThis will delete EVERY dinosaur in the library.\n\nAre you sure?")) return;
       if(!confirm("Double Check: This cannot be undone. Delete all?")) return;
       const q = query(collection(db, "dinos"));
       const snapshot = await getDocs(q);
