@@ -1,70 +1,121 @@
-# 🦖 ARK Tribe Companion (v1.3.2)
+🦖 ARK Tribe Companion (TEK LOG v1.8.0)
+A "Smart Dashboard" for ARK: Survival Ascended. This tool automatically reads your in-game Dino Exports, uploads them to the cloud, and analyzes your breeding lines to tell you exactly what to breed next.
 
-The "Go-To" automated tool for The Gooners tribe. Tracks dino stats, calculates breeding scores, and generates step-by-step genetic strategies.
+🌟 Key Features
+1. 📂 The Library
+Auto-Import: Just point your Export Gun at a dino and click "Export." It appears on the website instantly.
 
-## 🌟 Major Features
-* **Auto-Upload:** Shoot a dino with the Export Gun mod, and it appears on the site instantly.
-* **Mutation Tracking:** Automatically detects mutation counters.
-    * 🟢 **CLEAN:** 0/20 Mutations (Perfect for breeding stock).
-    * 🟡 **MUTATED:** 1-19 Mutations.
-    * 🔴 **CAPPED:** 20+ Mutations (Cannot trigger new mutations).
-* **Genetic Strategist:** The app analyzes your library and tells you exactly how to combine stats (e.g., *"Breed Male A with a clean Female to swap stats, then breed with Male B"*).
-* **Smart Scoring:** Calculates a "Breeding Score" based on your selected priorities (HP, Melee, Weight, etc.).
+Visual DNA: See the exact color regions of every dino visualized as a color bar.
 
----
+Smart Sorting: Sort by High Stats, Mutation Count, or Name.
 
-## 🛠️ Setup (For Tribe Members)
+The Graveyard: "Soft Delete" dead or sold dinos to hide them from breeding plans without deleting their data (preventing re-upload loops).
 
-To upload data, you need the Python "Watcher" script running on your PC.
+2. ❤️ Genetic Strategist (Matchmaker)
+Population Census: Automatically detects if you are missing a gender.
 
-### 1. Prerequisites
-1.  **Install Python:** [Download Here](https://www.python.org/).
-    * *Important:* Check the box **"Add Python to PATH"** during installation.
-2.  **Install Libraries:** Open Command Prompt (cmd) and run:
-    ```bash
-    pip install firebase-admin watchdog
-    ```
+Conflict Resolution: Identifies if your best stats are split across same-sex dinos and tells you how to fix it.
 
-### 2. The Keys
-1.  Get the `auto_uploader.py` file from the tribe Discord.
-2.  Get the `serviceAccountKey.json` file from the Admin (Dylan).
-3.  Put both files in the **same folder** on your computer.
+Aggressive Math: Prioritizes "Potential" (3 High Stats) over "Safety" (2 Guaranteed High Stats).
 
-### 3. Configure Path
-1.  Right-click `auto_uploader.py` -> **Edit** (Notepad or IDLE).
-2.  Change the `EXPORT_FOLDER` line to match your ARK install path:
-    * Example: `C:\Steam\steamapps\common\ARK Survival Ascended\ShooterGame\Saved\DinoExports\ASB`
+Target Lock: Displays the exact stat values you are looking for in a baby.
 
----
+Endgame Logic: Automatically switches to "Mutation Phase" when you achieve a perfect breeding pair.
 
-## 🚀 How to Use
+3. 🧬 Lineage Tracker
+Stat-Specific Tracking: Tracks your HP, Melee, Stamina, and Weight lines separately.
 
-### 1. The "Backfill" (Updating Old Dinos)
-When you first run the script, it will ask:
-> "Found 50 existing files. Update them now? (y/n)"
-* Type **`y`** and hit Enter.
-* This forces the database to re-read all your old exports to grab the latest **Mutation Counts** and **Color IDs**.
+Mutation Deltas: Automatically detects new mutations and highlights them in pink (e.g., Stam: 44 (+2)).
 
-### 2. Live Uploading
-Keep the black Python window open while you play.
-1.  Equip the **ASB Export Gun**.
-2.  Shoot a dino.
-3.  The script will beep/log: `[UPDATED] Rex -> Muts: 2`.
-4.  Refresh the website.
+Leaderboard: Shows the current "King" of each stat line.
 
-### 3. The "Breeding" Tab
-1.  **Select a Species** in the Library first.
-2.  Click the **Breeding Tab**.
-3.  **Toggle Priorities:** Check the boxes for stats you actually want (e.g., uncheck "Oxygen" for Rexes).
-4.  **Read the Strategy Board:**
-    * If you see a ⚠️ **WARNING**, follow the numbered steps (e.g., Gender Swap required).
-    * If the path is clear, look for the **Best Match** recommendation.
+🛠️ Installation Guide
+Prerequisites
+ARK: Survival Ascended (Steam Version preferred for easy file access).
 
----
+Python 3.x installed on your computer.
 
-## ⚠️ Troubleshooting
-* **Script closes instantly?**
-    * Open `cmd`, navigate to the folder, and type `python auto_uploader.py` to see the error message.
-    * Usually means `serviceAccountKey.json` is missing or your folder path is wrong.
-* **"Syntax Error" in Python?**
-    * Make sure you didn't accidentally delete a character when editing the folder path.
+Google Firebase Account (Free Tier).
+
+Step 1: Firebase Setup
+Go to console.firebase.google.com.
+
+Create a new project (e.g., "ArkCompanion").
+
+Build > Firestore Database: Create database (Start in Test Mode).
+
+Project Settings > Service Accounts:
+
+Select "Python".
+
+Click Generate New Private Key.
+
+Save the file as serviceAccountKey.json in your project folder.
+
+Project Settings > General:
+
+Scroll down to "Your Apps" > Click the </> (Web) icon.
+
+Copy the firebaseConfig object.
+
+Paste it into your index.html (replace the existing config).
+
+Step 2: Python Setup
+Open your project folder in a terminal.
+
+Install required libraries:
+
+Bash
+
+pip install firebase-admin watchdog
+Open auto_uploader.py and edit the EXPORT_FOLDER path to match your PC:
+
+Default: C:\Steam\steamapps\common\ARK Survival Ascended\ShooterGame\Saved\DinoExports\ASB
+
+Step 3: Running the Tool
+Start the "Listener":
+
+Bash
+
+python auto_uploader.py
+First Run: Type y to scan all existing exports.
+
+Daily Run: Just hit Enter to skip the full scan.
+
+Open the Dashboard:
+
+Double-click index.html to open it in your browser.
+
+🎮 How to Use
+Exporting Dinos
+In-game, hold the Taxidermy Tool (or Dino Storage Gun if using mods).
+
+Look at a dino.
+
+Select Options > Export Dino.
+
+The Python script will beep/log: [CREATED] Rex (Muts: 2).
+
+The Website will instantly update.
+
+Managing Lines
+Check the "Matchmaker" tab: It will tell you which Male and Female to breed.
+
+Claim Babies: When a baby is born, claim it and export it immediately.
+
+Check "Lineage": See if the baby took the "High Stat" title.
+
+Cull/Archive: If the baby is trash, kill it in-game. On the website, click the 💀 (Archive) button to hide it from future plans.
+
+⚠️ Troubleshooting
+Q: I deleted a dino on the site, but it came back!
+
+A: Do not use the "Delete" function unless you also delete the file from your hard drive. Instead, use the Archive (💀) button. This keeps the data in the database (preventing re-upload) but hides it from your view.
+
+Q: My mutations aren't showing (+2) in pink?
+
+A: Ensure you are using Python Script v5.0. Older versions did not read the specific stat mutation data from the export file. Run the script and type y to re-process your library.
+
+Q: The site is blank!
+
+A: Check your browser console (F12) for errors. Ensure your firebaseConfig in index.html is correct.
