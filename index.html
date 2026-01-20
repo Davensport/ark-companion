@@ -503,12 +503,8 @@
           if (valA < valB) return sortDesc ? 1 : -1; if (valA > valB) return sortDesc ? -1 : 1; return 0;
       });
 
-      // CALCULATE "CLEAN MAX" BASELINE
       let maxStats = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
-      let cleanMax = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
-      
       if(currentFilter !== 'All') {
-          // Find Global Max
           filtered.forEach(d => {
               if(Number(d.hp) > maxStats.hp) maxStats.hp = Number(d.hp);
               if(Number(d.stam) > maxStats.stam) maxStats.stam = Number(d.stam);
@@ -516,15 +512,6 @@
               if(Number(d.food) > maxStats.food) maxStats.food = Number(d.food);
               if(Number(d.weight) > maxStats.weight) maxStats.weight = Number(d.weight);
               if(Number(d.melee) > maxStats.melee) maxStats.melee = Number(d.melee);
-          });
-          // Find Clean Max (Mutations == 0)
-          filtered.filter(d => (d.mutations || 0) === 0).forEach(d => {
-              if(Number(d.hp) > cleanMax.hp) cleanMax.hp = Number(d.hp);
-              if(Number(d.stam) > cleanMax.stam) cleanMax.stam = Number(d.stam);
-              if(Number(d.oxygen) > cleanMax.oxygen) cleanMax.oxygen = Number(d.oxygen);
-              if(Number(d.food) > cleanMax.food) cleanMax.food = Number(d.food);
-              if(Number(d.weight) > cleanMax.weight) cleanMax.weight = Number(d.weight);
-              if(Number(d.melee) > cleanMax.melee) cleanMax.melee = Number(d.melee);
           });
       }
 
@@ -546,16 +533,16 @@
       }
 
       // HELPER: Generate Stat Display (Value + Star + Mutation Delta)
-      const renderStat = (val, globalMax, cleanMaxVal, mutations) => {
+      const renderStat = (val, max, mObj, key) => {
           let html = val;
           // Global Star
-          if(currentFilter !== 'All' && Number(val) >= globalMax && globalMax > 0) {
-              html = `<span class="best-stat">${val}</span>`; // Star added via CSS
+          if(currentFilter !== 'All' && Number(val) >= max && max > 0) {
+              html = `<span class="best-stat">${val}</span>`;
           }
-          // Mutation Delta (Pink (+2))
-          if(mutations > 0 && Number(val) > cleanMaxVal && cleanMaxVal > 0) {
-              let diff = Number(val) - cleanMaxVal;
-              html += `<span class="mut-delta">(+${diff})</span>`;
+          // Mutation Delta (explicitly from file)
+          // Look for mutation count in the stat object
+          if (mObj && mObj[key] && Number(mObj[key]) > 0) {
+              html += `<span class="mut-delta">(+${mObj[key]})</span>`;
           }
           return html;
       };
@@ -568,6 +555,7 @@
               if(dino.status === 'Fodder') statusClass = 'status-fodder';
               
               const m = dino.mutations || 0;
+              const muts = dino.stat_mutations || {};
 
               const html = `
                   <div class="tek-card ${statusClass}">
@@ -583,35 +571,35 @@
                       ${generateColorBar(dino.colors)}
                       <div style="font-size:1.1em; margin: 5px 0;">${dino.name} <span style="font-size:0.8em; color:#888;">(Lvl ${dino.level} ${dino.sex})</span></div>
                       <div class="stat-grid">
-                          <span>♥ ${renderStat(dino.hp, maxStats.hp, cleanMax.hp, m)}</span>
-                          <span>⚡ ${renderStat(dino.stam, maxStats.stam, cleanMax.stam, m)}</span>
-                          <span>O² ${renderStat(dino.oxygen, maxStats.oxygen, cleanMax.oxygen, m)}</span>
-                          <span>🍖 ${renderStat(dino.food, maxStats.food, cleanMax.food, m)}</span>
-                          <span>⚖ ${renderStat(dino.weight, maxStats.weight, cleanMax.weight, m)}</span>
-                          <span>⚔ ${renderStat(dino.melee, maxStats.melee, cleanMax.melee, m)}</span>
+                          <span>♥ ${renderStat(dino.hp, maxStats.hp, muts, "hp")}</span>
+                          <span>⚡ ${renderStat(dino.stam, maxStats.stam, muts, "stam")}</span>
+                          <span>O² ${renderStat(dino.oxygen, maxStats.oxygen, muts, "oxygen")}</span>
+                          <span>🍖 ${renderStat(dino.food, maxStats.food, muts, "food")}</span>
+                          <span>⚖ ${renderStat(dino.weight, maxStats.weight, muts, "weight")}</span>
+                          <span>⚔ ${renderStat(dino.melee, maxStats.melee, muts, "melee")}</span>
                       </div>
                   </div>`;
               feed.innerHTML += html;
           });
       } else {
-          // TABLE VIEW
           const getArrow = (col) => sortBy === col ? (sortDesc ? " ▼" : " ▲") : "";
           const getClass = (col) => sortBy === col ? "active-sort" : "";
           let rows = '';
           filtered.forEach(dino => {
                const m = dino.mutations || 0;
+               const muts = dino.stat_mutations || {};
                rows += `
                   <tr>
                       <td>${dino.name}</td>
                       <td>${dino.sex}</td>
                       <td>${dino.level}</td>
                       <td>${getMutBadge(m)}</td>
-                      <td>${renderStat(dino.hp, maxStats.hp, cleanMax.hp, m)}</td>
-                      <td>${renderStat(dino.stam, maxStats.stam, cleanMax.stam, m)}</td>
-                      <td>${renderStat(dino.oxygen, maxStats.oxygen, cleanMax.oxygen, m)}</td>
-                      <td>${renderStat(dino.food, maxStats.food, cleanMax.food, m)}</td>
-                      <td>${renderStat(dino.weight, maxStats.weight, cleanMax.weight, m)}</td>
-                      <td>${renderStat(dino.melee, maxStats.melee, cleanMax.melee, m)}</td>
+                      <td>${renderStat(dino.hp, maxStats.hp, muts, "hp")}</td>
+                      <td>${renderStat(dino.stam, maxStats.stam, muts, "stam")}</td>
+                      <td>${renderStat(dino.oxygen, maxStats.oxygen, muts, "oxygen")}</td>
+                      <td>${renderStat(dino.food, maxStats.food, muts, "food")}</td>
+                      <td>${renderStat(dino.weight, maxStats.weight, muts, "weight")}</td>
+                      <td>${renderStat(dino.melee, maxStats.melee, muts, "melee")}</td>
                       <td>${dino.status || '-'}</td>
                       <td><button class="action-btn edit-btn" data-id="${dino.id}">✎</button><button class="action-btn btn-delete" data-id="${dino.id}">✖</button></td>
                   </tr>`;
@@ -642,7 +630,7 @@
       attachListeners();
   }
 
-  // --- LOGIC ENGINE (v1.5.2) ---
+  // --- LOGIC ENGINE (v1.5.2: ENDGAME) ---
   window.renderMatchmaker = function() {
       const recEngine = document.getElementById("recommendation-engine");
       const stratBoard = document.getElementById("strategy-board");
