@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.7.0 (Lineage)</title>
+    <title>ARK Tribe Companion v1.8.0 (Graveyard)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -103,8 +103,12 @@
             padding: 5px 15px;
             cursor: pointer;
             font-family: 'Orbitron', sans-serif;
+            margin-left: 10px;
         }
         .toggle-view-btn:hover { background: var(--tek-blue); color: black; }
+        
+        .btn-graveyard { border-color: var(--gray); color: var(--gray); background: rgba(100,100,100,0.1); }
+        .btn-graveyard.active { border-color: var(--danger); color: var(--danger); background: rgba(255, 68, 68, 0.1); }
 
         .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
         .filter-chip {
@@ -194,6 +198,23 @@
         .step-num { background: var(--purple); color: white; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; min-width: 15px; text-align: center;}
         .step-text { color: #ddd; font-size: 0.9em; line-height: 1.4em;}
 
+        /* TARGET GOAL BOX */
+        .target-goal-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--gold);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .target-label { color: var(--gold); font-weight: bold; font-size: 0.9em; text-transform: uppercase; }
+        .target-stat { background: #222; padding: 5px 10px; border-radius: 3px; border: 1px solid #444; color: white; font-size: 1.1em; font-weight: bold; }
+        .target-stat span { font-size: 0.7em; color: #888; margin-left: 5px; }
+
         /* LINEAGE & TARGET BOXES */
         .lineage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
         .lineage-card {
@@ -210,22 +231,6 @@
         .lineage-muts { color: var(--pink); font-size: 1.2em; font-weight: bold; }
         .lineage-name { color: var(--tek-blue); font-size: 0.9em; margin-top: 5px; }
         .lineage-goal { margin-top: 15px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px; font-size: 0.8em; color: #aaa; }
-
-        .target-goal-box {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--gold);
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .target-label { color: var(--gold); font-weight: bold; font-size: 0.9em; text-transform: uppercase; }
-        .target-stat { background: #222; padding: 5px 10px; border-radius: 3px; border: 1px solid #444; color: white; font-size: 1.1em; font-weight: bold; }
-        .target-stat span { font-size: 0.7em; color: #888; margin-left: 5px; }
 
         /* FORMS */
         input, select {
@@ -250,6 +255,8 @@
             margin-bottom: 15px;
             position: relative;
         }
+        .tek-card.archived { opacity: 0.6; border-left-color: #444; filter: grayscale(100%); }
+        
         .status-breeder { border-left-color: var(--gold); }
         .status-boss { border-left-color: var(--danger); }
         .status-fodder { border-left-color: var(--gray); }
@@ -271,7 +278,8 @@
             margin-left: 5px;
         }
         .action-btn:hover { border-color: white; color: white; }
-        .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
+        .btn-archive:hover { border-color: var(--danger); color: var(--danger); }
+        .btn-restore:hover { border-color: var(--success); color: var(--success); }
 
         /* COLOR DNA BAR */
         .color-dna-bar {
@@ -345,7 +353,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.7.0</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.8.0</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="switchTab('lineage')">🧬 LINEAGE</button>
@@ -359,7 +367,10 @@
             <div class="filter-bar" id="speciesFilterBar">
                 <span class="filter-chip active" onclick="filterSpecies('All')">All Species</span>
             </div>
-            <button class="toggle-view-btn" onclick="toggleView()">☷ GRID / ☰ LIST</button>
+            <div>
+                <button class="toggle-view-btn" onclick="toggleView()">☷ GRID / ☰ LIST</button>
+                <button class="toggle-view-btn btn-graveyard" id="btnGraveyard" onclick="toggleGraveyard()">💀 GRAVEYARD</button>
+            </div>
         </div>
         <div class="sort-bar" id="gridSortBar">
             <span class="sort-label">SORT CARDS:</span>
@@ -404,8 +415,7 @@
         <div style="text-align:center; color:#888; margin-bottom:20px;">
             Tracking Highest Mutation Count per Stat
         </div>
-        <div id="lineage-dashboard" class="lineage-grid">
-            </div>
+        <div id="lineage-dashboard" class="lineage-grid"></div>
     </div>
 
     <div id="add" class="view-section">
@@ -427,6 +437,7 @@
                         <option value="Main Breeder">Main Breeder (Gold)</option>
                         <option value="Boss Army">Boss Army (Red)</option>
                         <option value="Fodder">Backup/Fodder</option>
+                        <option value="Archived">Archived (Dead)</option>
                     </select>
                 </div>
                 <label>Identity</label>
@@ -488,6 +499,7 @@
   let allDinos = [];
   let sortBy = 'timestamp';
   let sortDesc = true;
+  let showGraveyard = false;
 
   const q = query(collection(db, "dinos"), orderBy("timestamp", "desc"));
   
@@ -505,6 +517,13 @@
       renderLineage();
   });
 
+  window.toggleGraveyard = function() {
+      showGraveyard = !showGraveyard;
+      const btn = document.getElementById("btnGraveyard");
+      if(showGraveyard) btn.classList.add("active"); else btn.classList.remove("active");
+      renderList();
+  }
+
   window.setSort = function(criteria) {
       if(sortBy === criteria) sortDesc = !sortDesc; 
       else { sortBy = criteria; sortDesc = true; }
@@ -520,7 +539,16 @@
       feed.innerHTML = "";
       if(viewMode === 'cards') sortBar.style.display = "flex"; else sortBar.style.display = "none";
       
+      // FILTER LOGIC
       let filtered = currentFilter === 'All' ? [...allDinos] : allDinos.filter(d => d.species === currentFilter);
+      
+      // Graveyard Filter
+      if(showGraveyard) {
+          filtered = filtered.filter(d => d.status === 'Archived');
+      } else {
+          filtered = filtered.filter(d => d.status !== 'Archived');
+      }
+
       filtered.sort((a, b) => {
           let valA = a[sortBy]; let valB = b[sortBy];
           if(sortBy !== 'name' && sortBy !== 'species') { valA = Number(valA) || 0; valB = Number(valB) || 0; }
@@ -531,24 +559,25 @@
       let maxStats = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
       let cleanMax = { hp: 0, stam: 0, oxygen: 0, food: 0, weight: 0, melee: 0 };
       
-      if(currentFilter !== 'All') {
-          filtered.forEach(d => {
-              if(Number(d.hp) > maxStats.hp) maxStats.hp = Number(d.hp);
-              if(Number(d.stam) > maxStats.stam) maxStats.stam = Number(d.stam);
-              if(Number(d.oxygen) > maxStats.oxygen) maxStats.oxygen = Number(d.oxygen);
-              if(Number(d.food) > maxStats.food) maxStats.food = Number(d.food);
-              if(Number(d.weight) > maxStats.weight) maxStats.weight = Number(d.weight);
-              if(Number(d.melee) > maxStats.melee) maxStats.melee = Number(d.melee);
-          });
-          filtered.filter(d => (d.mutations || 0) === 0).forEach(d => {
-              if(Number(d.hp) > cleanMax.hp) cleanMax.hp = Number(d.hp);
-              if(Number(d.stam) > cleanMax.stam) cleanMax.stam = Number(d.stam);
-              if(Number(d.oxygen) > cleanMax.oxygen) cleanMax.oxygen = Number(d.oxygen);
-              if(Number(d.food) > cleanMax.food) cleanMax.food = Number(d.food);
-              if(Number(d.weight) > cleanMax.weight) cleanMax.weight = Number(d.weight);
-              if(Number(d.melee) > cleanMax.melee) cleanMax.melee = Number(d.melee);
-          });
-      }
+      // Calculate maxes only based on ACTIVE dinos (unless looking at graveyard)
+      const activeStatsPool = allDinos.filter(d => d.status !== 'Archived' && (currentFilter === 'All' || d.species === currentFilter));
+      
+      activeStatsPool.forEach(d => {
+          if(Number(d.hp) > maxStats.hp) maxStats.hp = Number(d.hp);
+          if(Number(d.stam) > maxStats.stam) maxStats.stam = Number(d.stam);
+          if(Number(d.oxygen) > maxStats.oxygen) maxStats.oxygen = Number(d.oxygen);
+          if(Number(d.food) > maxStats.food) maxStats.food = Number(d.food);
+          if(Number(d.weight) > maxStats.weight) maxStats.weight = Number(d.weight);
+          if(Number(d.melee) > maxStats.melee) maxStats.melee = Number(d.melee);
+      });
+      activeStatsPool.filter(d => (d.mutations || 0) === 0).forEach(d => {
+          if(Number(d.hp) > cleanMax.hp) cleanMax.hp = Number(d.hp);
+          if(Number(d.stam) > cleanMax.stam) cleanMax.stam = Number(d.stam);
+          if(Number(d.oxygen) > cleanMax.oxygen) cleanMax.oxygen = Number(d.oxygen);
+          if(Number(d.food) > cleanMax.food) cleanMax.food = Number(d.food);
+          if(Number(d.weight) > cleanMax.weight) cleanMax.weight = Number(d.weight);
+          if(Number(d.melee) > cleanMax.melee) cleanMax.melee = Number(d.melee);
+      });
 
       const getMutBadge = (m) => {
           m = Number(m) || 0;
@@ -580,14 +609,20 @@
               if(dino.status === 'Main Breeder') statusClass = 'status-breeder';
               if(dino.status === 'Boss Army') statusClass = 'status-boss';
               if(dino.status === 'Fodder') statusClass = 'status-fodder';
+              if(dino.status === 'Archived') statusClass = 'archived';
+              
               const m = dino.mutations || 0;
               const muts = dino.stat_mutations || {};
+              
+              // Archive Button Logic
+              let actionBtn = `<button class="action-btn btn-archive" onclick="handleArchive('${dino.id}')" title="Archive (Kill)">💀</button>`;
+              if(showGraveyard) actionBtn = `<button class="action-btn btn-restore" onclick="handleRestore('${dino.id}')" title="Restore">♻</button>`;
 
               const html = `
                   <div class="tek-card ${statusClass}">
                       <div class="card-actions">
                           <button class="action-btn edit-btn" data-id="${dino.id}">✎</button>
-                          <button class="action-btn btn-delete" data-id="${dino.id}">✖</button>
+                          ${actionBtn}
                       </div>
                       <strong style="color:var(--tek-blue); font-size:1.2em;">${dino.species}</strong> 
                       <div style="margin-top:5px;">
@@ -614,6 +649,9 @@
           filtered.forEach(dino => {
                const m = dino.mutations || 0;
                const muts = dino.stat_mutations || {};
+               let actionBtn = `<button class="action-btn btn-archive" onclick="handleArchive('${dino.id}')">💀</button>`;
+               if(showGraveyard) actionBtn = `<button class="action-btn btn-restore" onclick="handleRestore('${dino.id}')">♻</button>`;
+
                rows += `
                   <tr>
                       <td>${dino.name}</td>
@@ -627,7 +665,7 @@
                       <td>${renderStat(dino.weight, maxStats.weight, muts, "weight")}</td>
                       <td>${renderStat(dino.melee, maxStats.melee, muts, "melee")}</td>
                       <td>${dino.status || '-'}</td>
-                      <td><button class="action-btn edit-btn" data-id="${dino.id}">✎</button><button class="action-btn btn-delete" data-id="${dino.id}">✖</button></td>
+                      <td><button class="action-btn edit-btn" data-id="${dino.id}">✎</button>${actionBtn}</td>
                   </tr>`;
           });
           feed.innerHTML = `
@@ -656,10 +694,8 @@
       attachListeners();
   }
 
-  // --- LOGIC ENGINE ---
+  // --- LOGIC ENGINE (v1.8.0: Filter Archived) ---
   window.renderMatchmaker = function() {
-      // (Simplified call to reuse logic - ensure to keep full function from v1.5.2)
-      // I am including it fully here to prevent breaking
       const recEngine = document.getElementById("recommendation-engine");
       const stratBoard = document.getElementById("strategy-board");
       const maleFeed = document.getElementById("male-feed");
@@ -683,7 +719,9 @@
       if(currentFilter === 'All') { speciesLabel.innerText = "Please select a species first."; return; }
 
       speciesLabel.innerText = "Analyzing: " + currentFilter;
-      const speciesDinos = allDinos.filter(d => d.species === currentFilter);
+      // FILTER: Ignore Archived Dinos for breeding
+      const speciesDinos = allDinos.filter(d => d.species === currentFilter && d.status !== 'Archived');
+      
       const totalMales = speciesDinos.filter(d => d.sex === 'Male');
       const totalFemales = speciesDinos.filter(d => d.sex === 'Female');
 
@@ -759,7 +797,6 @@
       stratHTML += targetGoalHTML; stratHTML += `</div>`;
       stratBoard.innerHTML = stratHTML;
 
-      // Scoring & Cards Logic
       const males = speciesDinos.filter(d => d.sex === 'Male');
       const females = speciesDinos.filter(d => d.sex === 'Female');
       let bestPair = null; let highestScore = -1; let maxPossiblePoints = 0.5; 
@@ -834,7 +871,7 @@
       filterList(femaleCards).forEach(c => femaleFeed.innerHTML += c.html);
   }
 
-  // --- LINEAGE TRACKER (NEW) ---
+  // --- LINEAGE TRACKER (Filter Archived) ---
   window.renderLineage = function() {
       const container = document.getElementById("lineage-dashboard");
       container.innerHTML = "";
@@ -843,7 +880,8 @@
           return;
       }
 
-      const speciesDinos = allDinos.filter(d => d.species === currentFilter);
+      // Filter: Ignore Archived
+      const speciesDinos = allDinos.filter(d => d.species === currentFilter && d.status !== 'Archived');
       const lines = [
           { key: "hp", label: "HP Line" },
           { key: "melee", label: "Melee Line" },
@@ -856,7 +894,6 @@
           let maxMuts = -1;
 
           speciesDinos.forEach(d => {
-              // Get mut count for this stat specifically
               let count = 0;
               if(d.stat_mutations && d.stat_mutations[line.key]) {
                   count = Number(d.stat_mutations[line.key]);
@@ -870,8 +907,6 @@
           if(king && maxMuts > 0) {
               const baseVal = Number(king[line.key]);
               const totalVal = baseVal + maxMuts; 
-              // Note: baseVal in DB is Wild. maxMuts is Mutated levels. Total = Wild + Mutated.
-              
               const html = `
                   <div class="lineage-card ${maxMuts > 0 ? 'active-line' : ''}">
                       <div class="lineage-title">${line.label}</div>
@@ -883,7 +918,6 @@
               `;
               container.innerHTML += html;
           } else {
-              // No mutations yet for this line
               container.innerHTML += `
                   <div class="lineage-card">
                       <div class="lineage-title">${line.label}</div>
@@ -896,7 +930,8 @@
 
   function isBest(val, max) { if(currentFilter === 'All') return ''; return (Number(val) >= max && max > 0) ? 'best-stat' : ''; }
   function attachListeners() {
-      document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', (e) => handleDelete(e.target.dataset.id)));
+      // Re-attach listeners is tricky because onclick logic is inline in HTML for simplicity in this file
+      // But we need to ensure edit buttons work
       document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => handleEdit(e.target.dataset.id)));
   }
   function handleEdit(id) {
@@ -919,6 +954,17 @@
       document.getElementById('submitBtn').innerText = "UPDATE ENTRY";
       switchTab('add');
   }
+  // NEW: Archive Function
+  window.handleArchive = async function(id) {
+      if(!confirm("Send to Graveyard? (Soft Delete)")) return;
+      await updateDoc(doc(db, "dinos", id), { status: 'Archived' });
+  }
+  // NEW: Restore Function
+  window.handleRestore = async function(id) {
+      if(!confirm("Restore this dino?")) return;
+      await updateDoc(doc(db, "dinos", id), { status: 'Standard' });
+  }
+
   document.getElementById("addDinoForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.target;
