@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARK Tribe Companion v1.8.0 (Graveyard)</title>
+    <title>ARK Tribe Companion v1.8.1 (UI Polish)</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -353,7 +353,7 @@
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.8.0</h2>
+    <h2 style="color:var(--tek-blue); text-align:center;">TEK LOG_v1.8.1</h2>
     <button class="nav-btn active" onclick="switchTab('library')">🦖 LIBRARY</button>
     <button class="nav-btn" onclick="switchTab('matchmaker')">♥ BREEDING</button>
     <button class="nav-btn" onclick="switchTab('lineage')">🧬 LINEAGE</button>
@@ -654,7 +654,7 @@
 
                rows += `
                   <tr>
-                      <td>${dino.name}</td>
+                      <td><span style="color:white; font-weight:bold;">${dino.name}</span> <span style="color:#666; font-size:0.8em;">(${dino.species})</span></td>
                       <td>${dino.sex}</td>
                       <td>${dino.level}</td>
                       <td>${getMutBadge(m)}</td>
